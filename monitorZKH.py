@@ -14,6 +14,7 @@ def init_connection():
         + st.secrets["password"]
     )
 @st.cache_data(ttl=600)
+
 def run_query(query, params=None):
     with conn.cursor() as cur:
         if params:
@@ -28,8 +29,17 @@ def get_city_raion_dataset(region_code) -> pd.DataFrame:
   params = (region_code,)
   rows = run_query("select namespace.NAME, namespace.TYPENAME,ADMHIERARCHY.REGIONCODE FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 1 and ADMHIERARCHY.REGIONCODE= ? order by ADMHIERARCHY.REGIONCODE", params)
   return rows
-
-conn = init_connection()
+def get_city_raion_df(selected_regions ) -> pd.DataFrame
+ if len(selected_regions) > 0:
+   for region in selected_regions:
+     filtered_df = df.iloc[region]
+     st.header("Районы "+" "+filtered_df["region_name"]+filtered_df["region_type"])
+     region_code = filtered_df["region_code"]
+     city_raion_dataset = get_city_raion_dataset(region_code)
+     df_city_raion = pd.DataFrame(dict(zip(['region_name', 'region_type', 'region_code'], zip(*city_raion_dataset))))
+  else:
+     st.markdown("Регион не выбран.")
+ return df_city_raion    
 
 def get_region_df() -> pd.DataFrame:  
   regions_dataset = get_regions_dataset()
@@ -50,32 +60,17 @@ def get_region_df() -> pd.DataFrame:
          width="medium",
      ), 
   }
-  event = st.dataframe(
-    df,
+
+conn = init_connection()
+df_region = get_region_df()
+event = st.dataframe(
+    df_region,
     column_config=column_configuration,
     use_container_width=True,
     hide_index=True,
     on_select="rerun",
     selection_mode="single-row",
   )
+selected_regions = event.selection.rows
 
-  selected_regions = event.selection.rows
-  if len(selected_regions) > 0:
-   for region in selected_regions:
-     filtered_df = df.iloc[region]
-     st.header("Районы "+" "+filtered_df["region_name"]+filtered_df["region_type"])
-     region_code = filtered_df["region_code"]
-     city_raion_dataset = get_city_raion_dataset(region_code)
-     df_city_raion = pd.DataFrame(dict(zip(['region_name', 'region_type', 'region_code'], zip(*city_raion_dataset))))
-     event = st.dataframe(
-     df_city_raion,
-     column_config=column_configuration,
-     use_container_width=True,
-     hide_index=True,
-     on_select="rerun",
-     selection_mode="single-row",
-  )
-  else:
-     st.markdown("Регион не выбран.")
-
-get_region_df()
+df_city_raion = get_city_raion_df(selected_regions )
