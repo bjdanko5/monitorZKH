@@ -34,7 +34,7 @@ def get_regions_dataset() -> pd.DataFrame:
 def get_obl_raion_dataset(region_code) -> pd.DataFrame:  
   #params = {"region_code": region_code}
   params = (region_code,)
-  rows = run_query("select namespace.NAME, namespace.TYPENAME,ADMHIERARCHY.REGIONCODE FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 0 and ADMHIERARCHY.REGIONCODE= ? order by ADMHIERARCHY.REGIONCODE", params)
+  rows = run_query("select namespace.NAME, namespace.TYPENAME,ADMHIERARCHY.REGIONCODE FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 1 and ADMHIERARCHY.REGIONCODE= ? order by ADMHIERARCHY.REGIONCODE", params)
   return rows
 
 regions_dataset = get_regions_dataset()
@@ -64,12 +64,13 @@ event = st.dataframe(
     on_select="rerun",
     selection_mode="single-row",
 )
-st.header("Выбранный Регион")
+
 selected_regions = event.selection.rows
 if len(selected_regions) > 0:
   for region in selected_regions:
     filtered_df = df.iloc[region]
-    st.markdown(filtered_df["region_code"])
+    st.header("Районы "+" "+filtered_df["region_name"]+filtered_df["region_type"])
+    #st.markdown
     #st.dataframe( filtered_df,
     #    column_config=column_configuration,
     #    use_container_width=True,)
