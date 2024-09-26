@@ -5,6 +5,7 @@ import pyodbc
 # Initialize connection.
 # Uses st.cache_resource to only run once.
 @st.cache_resource
+
 def init_connection():
     return pyodbc.connect(
         "DRIVER={ODBC Driver 17 for SQL Server};SERVER="
@@ -20,34 +21,26 @@ def init_connection():
 # Uses st.cache_data to only rerun when the query changes or after 10 min.
 conn = init_connection()
 @st.cache_data(ttl=600)
-def run_query(query):
+def run_query(query, params=None):
     with conn.cursor() as cur:
-        cur.execute(query)
+        if params:
+          cur.execute(query, params)
+        else:
+          cur.execute(query)
         return cur.fetchall()
+def get_regions_dataset() -> pd.DataFrame:  
+  rows = run_query("select namespace.NAME, namespace.TYPENAME,ADMHIERARCHY.REGIONCODE FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 0 order by ADMHIERARCHY.REGIONCODE")
+  return rows
+def get_obl_raion_dataset(region_code) -> pd.DataFrame:  
+  #params = {"region_code": region_code}
+  params = (region_code,)
+  rows = run_query("select namespace.NAME, namespace.TYPENAME,ADMHIERARCHY.REGIONCODE FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 0 and ADMHIERARCHY.REGIONCODE= ? order by ADMHIERARCHY.REGIONCODE", params)
+  return rows
 
-rows = run_query("select namespace.NAME, namespace.TYPENAME,ADMHIERARCHY.REGIONCODE FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 0 order by ADMHIERARCHY.REGIONCODE")
+regions_dataset = get_regions_dataset()
 
-# Print results.
-#for row in rows:
-#    st.write(f"{row[0]} has a :{row[1]}:")
-#
-#st.write("Hello world")
-#df = pd.DataFrame(rows, columns=['NAME', 'TYPENAME', 'REGIONCODE'])
-df = pd.DataFrame(rows)
-
-# print(len(rows))
-# print(rows[0])
-#df.columns = ['NAME', 'TYPENAME', 'REGIONCODE']
-
-# df = pd.DataFrame({
-#     'NAME': [row[0] for row in rows],
-#     'TYPENAME': [row[1] for row in rows],
-#     'REGIONCODE': [row[2] for row in rows]
-#})
-
-#df = pd.DataFrame(dict(zip(['NAME', 'TYPENAME', 'REGIONCODE'], zip(*rows))))
 st.header("Регионы")
-df = pd.DataFrame(dict(zip(['Регион', 'Тип Региона', 'Код Региона'], zip(*rows))))
+df = pd.DataFrame(dict(zip(['region_name', 'region_type', 'region_code'], zip(*regions_dataset))))
 column_configuration = {
     "region_name": st.column_config.TextColumn(
         "Регион", help="Наименование региона", max_chars=150, width="large"
@@ -76,8 +69,20 @@ selected_regions = event.selection.rows
 if len(selected_regions) > 0:
   for region in selected_regions:
     filtered_df = df.iloc[region]
-    st.dataframe( filtered_df,
-        column_config=column_configuration,
-        use_container_width=True,)
+    st.markdown(filtered_df["region_code"])
+    #st.dataframe( filtered_df,
+    #    column_config=column_configuration,
+    #    use_container_width=True,)
+    region_code = filtered_df["region_code"]
+    obl_raion_dataset = get_obl_raion_dataset(region_code)
+    df_obl_raion = pd.DataFrame(dict(zip(['region_name', 'region_type', 'region_code'], zip(*obl_raion_dataset))))
+    event = st.dataframe(
+    df_obl_raion,
+    column_config=column_configuration,
+    use_container_width=True,
+    hide_index=True,
+    on_select="rerun",
+    selection_mode="single-row",
+)
 else:
     st.markdown("Регион не выбран.")
