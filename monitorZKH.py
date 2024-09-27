@@ -22,7 +22,7 @@ def init_connection():
         print(f"Ошибка подключения: {error_message}")
         # You can add additional error handling code here, such as logging or retrying the connection
         return None
-@st.cache_data(ttl=600)
+#@st.cache_data(ttl=600)
 
 def run_query(query, params=None):
     if conn is None:
@@ -38,8 +38,8 @@ def get_regions_dataset() -> pd.DataFrame:
   rows = run_query("select namespace.NAME, namespace.TYPENAME,ADMHIERARCHY.REGIONCODE FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 0 order by ADMHIERARCHY.REGIONCODE")
   return rows
 def get_city_raion_dataset(region_code) -> pd.DataFrame:  
-  params = (region_code,)
-  rows = run_query("select namespace.NAME, namespace.TYPENAME,IIF(ADMHIERARCHY.AREACODE>ADMHIERARCHY.CITYCODE,ADMHIERARCHY.AREACODE,ADMHIERARCHY.CITYCODE),ADMHIERARCHY.REGIONCODE FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 1 and ADMHIERARCHY.REGIONCODE= ? order by ADMHIERARCHY.REGIONCODE", params)
+  params = (alltrim(region_code),)
+  rows = run_query("select namespace.NAME, namespace.TYPENAME,IIF(ADMHIERARCHY.AREACODE>ADMHIERARCHY.CITYCODE,ADMHIERARCHY.AREACODE,ADMHIERARCHY.CITYCODE),ADMHIERARCHY.REGIONCODE,iif(ADMHIERARCHY.CITYCODE=0,0,1) FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 1 and ADMHIERARCHY.REGIONCODE= ? order by ADMHIERARCHY.REGIONCODE", params)
   return rows
 def get_city_dataset(region_code,city_raion_code) -> pd.DataFrame:  
   params = (alltrim(region_code),alltrim(city_raion_code),)
@@ -82,7 +82,7 @@ def get_city_raion_df(df_region,selected_regions ) -> pd.DataFrame:
 
      city_raion_dataset = get_city_raion_dataset(region_code)
      
-     df_city_raion = pd.DataFrame(dict(zip(['city_raion_name', 'city_raion_type', 'city_raion_code', 'region_code'], zip(*city_raion_dataset))))
+     df_city_raion = pd.DataFrame(dict(zip(['city_raion_name', 'city_raion_type', 'city_raion_code', 'region_code','is_city'], zip(*city_raion_dataset))))
      
   column_configuration = {
      "city_raion_name": st.column_config.TextColumn(
@@ -104,6 +104,12 @@ def get_city_raion_df(df_region,selected_regions ) -> pd.DataFrame:
          help="Код Региона",
          width="small"
      ), 
+     "is_city": st.column_config.NumberColumn(
+         "Это Город",
+         help="Это Город",
+         width="small"
+     ), 
+
     }
   return df_city_raion, column_configuration,region_name,region_type
 def get_city_df(df_city_raion,selected_city_raion ) -> pd.DataFrame:
@@ -115,12 +121,15 @@ def get_city_df(df_city_raion,selected_city_raion ) -> pd.DataFrame:
      city_raion_code = filtered_df["city_raion_code"]
      city_raion_name = filtered_df["city_raion_name"]
      city_raion_type = filtered_df["city_raion_type"]   
+     is_city         = filtered_df["is_city"]   
      region_code     = filtered_df["region_code"]   
-
-     city_dataset = get_city_dataset(region_code,city_raion_code)
-     
-     df_city = pd.DataFrame(dict(zip(['city_name', 'city_type', 'city_code','city_raion_code','region_code'], zip(*city_dataset))))
-     
+     if is_city == 0: 
+      city_dataset = get_city_dataset(region_code,city_raion_code)
+      df_city = pd.DataFrame(dict(zip(['city_name', 'city_type', 'city_code','city_raion_code','region_code'], zip(*city_dataset))))
+     else:
+      df_city = pd.DataFrame(columns=['city_name', 'city_type', 'city_code', 'city_raion_code', 'region_code'])
+      
+        
   column_configuration = {
       "city_name": st.column_config.TextColumn(
          "Населенный пункт", help="Населенный пункт", max_chars=150, width="large"
