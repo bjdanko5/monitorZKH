@@ -35,15 +35,67 @@ def run_query(query, params=None):
             cur.execute(query)
         return cur.fetchall()
 def get_regions_dataset() -> pd.DataFrame:  
-  rows = run_query("select namespace.NAME, namespace.TYPENAME,ADMHIERARCHY.REGIONCODE FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 0 order by ADMHIERARCHY.REGIONCODE")
+  rows = run_query("""
+      SELECT 
+          namespace.NAME, 
+          namespace.TYPENAME, 
+          ADMHIERARCHY.REGIONCODE
+      FROM 
+          ADMHIERARCHY
+      JOIN 
+          namespace
+      ON 
+          ADMHIERARCHY.OBJECTID = namespace.OBJECTID
+      WHERE 
+          ADMHIERARCHY.Level = 0
+      ORDER BY 
+          ADMHIERARCHY.REGIONCODE
+  """)
   return rows
 def get_city_raion_dataset(region_code) -> pd.DataFrame:  
   params = (alltrim(region_code),)
-  rows = run_query("select namespace.NAME, namespace.TYPENAME,IIF(ADMHIERARCHY.AREACODE>ADMHIERARCHY.CITYCODE,ADMHIERARCHY.AREACODE,ADMHIERARCHY.CITYCODE),ADMHIERARCHY.REGIONCODE,iif(ADMHIERARCHY.CITYCODE=0,0,1) FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 1 and ADMHIERARCHY.REGIONCODE= ? order by ADMHIERARCHY.REGIONCODE", params)
+  rows = run_query("""
+      SELECT
+          namespace.NAME,
+          namespace.TYPENAME,
+          IIF(ADMHIERARCHY.AREACODE > ADMHIERARCHY.CITYCODE, ADMHIERARCHY.AREACODE, ADMHIERARCHY.CITYCODE),
+          ADMHIERARCHY.REGIONCODE,
+          IIF(ADMHIERARCHY.CITYCODE = 0, 0, 1)
+      FROM
+          ADMHIERARCHY
+      JOIN
+          namespace
+      ON
+          ADMHIERARCHY.OBJECTID = namespace.OBJECTID
+      WHERE
+          ADMHIERARCHY.Level = 1
+          AND ADMHIERARCHY.REGIONCODE = ?
+      ORDER BY
+          ADMHIERARCHY.REGIONCODE
+  """, params)
   return rows
 def get_city_dataset(region_code,city_raion_code) -> pd.DataFrame:  
   params = (alltrim(region_code),alltrim(city_raion_code),)
-  rows = run_query("select namespace.NAME, namespace.TYPENAME,IIF(ADMHIERARCHY.CITYCODE>ADMHIERARCHY.PLACECODE,ADMHIERARCHY.CITYCODE,ADMHIERARCHY.PLACECODE),IIF(ADMHIERARCHY.AREACODE>ADMHIERARCHY.CITYCODE,ADMHIERARCHY.AREACODE,ADMHIERARCHY.CITYCODE),ADMHIERARCHY.REGIONCODE FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 2 and ADMHIERARCHY.REGIONCODE= ? and IIF(ADMHIERARCHY.AREACODE>ADMHIERARCHY.CITYCODE,ADMHIERARCHY.AREACODE,ADMHIERARCHY.CITYCODE)= ? order by ADMHIERARCHY.REGIONCODE", params)
+  rows = run_query("""
+      SELECT
+          namespace.NAME,
+          namespace.TYPENAME,
+          IIF(ADMHIERARCHY.CITYCODE > ADMHIERARCHY.PLACECODE, ADMHIERARCHY.CITYCODE, ADMHIERARCHY.PLACECODE),
+          IIF(ADMHIERARCHY.AREACODE > ADMHIERARCHY.CITYCODE, ADMHIERARCHY.AREACODE, ADMHIERARCHY.CITYCODE),
+          ADMHIERARCHY.REGIONCODE
+      FROM
+          ADMHIERARCHY
+      JOIN
+          namespace
+      ON
+          ADMHIERARCHY.OBJECTID = namespace.OBJECTID
+      WHERE
+          ADMHIERARCHY.Level = 2
+          AND ADMHIERARCHY.REGIONCODE = ?
+          AND IIF(ADMHIERARCHY.AREACODE > ADMHIERARCHY.CITYCODE, ADMHIERARCHY.AREACODE, ADMHIERARCHY.CITYCODE) = ?
+      ORDER BY
+          ADMHIERARCHY.REGIONCODE
+  """, params)
   return rows
 
 def get_region_df() -> pd.DataFrame:  
@@ -161,6 +213,11 @@ def get_city_df(df_city_raion,selected_city_raion ) -> pd.DataFrame:
 
     }
   return df_city,column_configuration,city_raion_name,city_raion_type
+def is_city( selected_city_raion) -> bool:
+  for city_raion in selected_city_raion:
+     filtered_df = df_city_raion.iloc[city_raion]
+     is_city         = filtered_df["is_city"]   
+     return (is_city==1)
 
 conn = init_connection()
 
@@ -192,7 +249,8 @@ if len(selected_regions) > 0:
     selection_mode="single-row",
   )
   selected_city_raion = event_df_city_raion.selection.rows
-  if len(selected_city_raion) > 0: 
+
+  if len(selected_city_raion) > 0 and not is_city(selected_city_raion): 
     df_city,column_configuration,city_raion_name,city_raion_type = get_city_df(df_city_raion,selected_city_raion )
     st.header("Населенные пункты района " +  " " + city_raion_name + " " + city_raion_type)
     event_df_city = st.dataframe(
