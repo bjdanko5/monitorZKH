@@ -78,11 +78,13 @@ def get_city_raion_df(df_region,selected_regions ) -> pd.DataFrame:
 
      region_code = filtered_df["region_code"]
      region_name = filtered_df["region_name"]
-     region_type = filtered_df["region_type"]   
-
+     region_type = filtered_df["region_type"] 
      city_raion_dataset = get_city_raion_dataset(region_code)
-     
-     df_city_raion = pd.DataFrame(dict(zip(['city_raion_name', 'city_raion_type', 'city_raion_code', 'region_code','is_city'], zip(*city_raion_dataset))))
+  
+     if city_raion_dataset is None: 
+      df_city_raion = pd.DataFrame(columns=['city_raion_name', 'city_raion_type', 'city_raion_code', 'region_code','is_city']) 
+     else:  
+      df_city_raion = pd.DataFrame(dict(zip(['city_raion_name', 'city_raion_type', 'city_raion_code', 'region_code','is_city'], zip(*city_raion_dataset))))
      
   column_configuration = {
      "city_raion_name": st.column_config.TextColumn(
