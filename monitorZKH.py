@@ -3,7 +3,8 @@ import pandas as pd
 import pyodbc
 
 import pyodbc
-
+def alltrim(s):
+    return s.strip()
 def init_connection():
     try:
         connection_string = (
@@ -38,8 +39,13 @@ def get_regions_dataset() -> pd.DataFrame:
   return rows
 def get_city_raion_dataset(region_code) -> pd.DataFrame:  
   params = (region_code,)
-  rows = run_query("select namespace.NAME, namespace.TYPENAME,ADMHIERARCHY.REGIONCODE FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 1 and ADMHIERARCHY.REGIONCODE= ? order by ADMHIERARCHY.REGIONCODE", params)
+  rows = run_query("select namespace.NAME, namespace.TYPENAME,IIF(ADMHIERARCHY.AREACODE>ADMHIERARCHY.CITYCODE,ADMHIERARCHY.AREACODE,ADMHIERARCHY.CITYCODE),ADMHIERARCHY.REGIONCODE FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 1 and ADMHIERARCHY.REGIONCODE= ? order by ADMHIERARCHY.REGIONCODE", params)
   return rows
+def get_city_dataset(region_code,city_raion_code) -> pd.DataFrame:  
+  params = (alltrim(region_code),alltrim(city_raion_code),)
+  rows = run_query("select namespace.NAME, namespace.TYPENAME,IIF(ADMHIERARCHY.CITYCODE>ADMHIERARCHY.PLACECODE,ADMHIERARCHY.CITYCODE,ADMHIERARCHY.PLACECODE),IIF(ADMHIERARCHY.AREACODE>ADMHIERARCHY.CITYCODE,ADMHIERARCHY.AREACODE,ADMHIERARCHY.CITYCODE),ADMHIERARCHY.REGIONCODE FROM ADMHIERARCHY join namespace on ADMHIERARCHY.OBJECTID = namespace.OBJECTID where ADMHIERARCHY.Level = 2 and ADMHIERARCHY.REGIONCODE= ? and IIF(ADMHIERARCHY.AREACODE>ADMHIERARCHY.CITYCODE,ADMHIERARCHY.AREACODE,ADMHIERARCHY.CITYCODE)= ? order by ADMHIERARCHY.REGIONCODE", params)
+  return rows
+
 def get_region_df() -> pd.DataFrame:  
 
   regions_dataset = get_regions_dataset()
@@ -49,7 +55,7 @@ def get_region_df() -> pd.DataFrame:
   else:
       df = pd.DataFrame(dict(zip(['region_name', 'region_type', 'region_code'], zip(*regions_dataset))))
   column_configuration = {
-      "region_name": st.column_config.TextColumn(
+     "region_name": st.column_config.TextColumn(
          "Регион", help="Наименование региона", max_chars=150, width="large"
      ),
      "region_type": st.column_config.TextColumn(
@@ -65,35 +71,86 @@ def get_region_df() -> pd.DataFrame:
   }
   return df, column_configuration
 def get_city_raion_df(df_region,selected_regions ) -> pd.DataFrame:
+  region_name = ""
+  region_type = ""   
   for region in selected_regions:
      filtered_df = df_region.iloc[region]
 
      region_code = filtered_df["region_code"]
      region_name = filtered_df["region_name"]
-     region_type = filtered_df["region_tyoe"]   
+     region_type = filtered_df["region_type"]   
 
      city_raion_dataset = get_city_raion_dataset(region_code)
      
-     df_city_raion = pd.DataFrame(dict(zip(['region_name', 'region_type', 'region_code'], zip(*city_raion_dataset))))
+     df_city_raion = pd.DataFrame(dict(zip(['city_raion_name', 'city_raion_type', 'city_raion_code', 'region_code'], zip(*city_raion_dataset))))
      
-     column_configuration = {
-      "region_name": st.column_config.TextColumn(
-         "Регион", help="Наименование региона", max_chars=150, width="large"
+  column_configuration = {
+     "city_raion_name": st.column_config.TextColumn(
+         "Район / Город", help="Наименование Район / Город", max_chars=150, width="large"
      ),
-     "region_type": st.column_config.TextColumn(
-         "Тип Региона",
-         help="Тип Региона",
+     "city_raion_type": st.column_config.TextColumn(
+         "Тип Район / Город",
+         help="Тип Район / Город",
          width="medium"
          
      ),
+     "city_raion_code": st.column_config.TextColumn(
+         "Код Район / Город",
+         help="Район / Город",
+         width="small"       
+     ), 
      "region_code": st.column_config.TextColumn(
          "Код Региона",
          help="Код Региона",
          width="small"
-         
      ), 
     }
   return df_city_raion, column_configuration,region_name,region_type
+def get_city_df(df_city_raion,selected_city_raion ) -> pd.DataFrame:
+  city_raion_name = ""
+  city_raion_type = ""
+  for city_raion in selected_city_raion:
+     filtered_df = df_city_raion.iloc[city_raion]
+
+     city_raion_code = filtered_df["city_raion_code"]
+     city_raion_name = filtered_df["city_raion_name"]
+     city_raion_type = filtered_df["city_raion_type"]   
+     region_code     = filtered_df["region_code"]   
+
+     city_dataset = get_city_dataset(region_code,city_raion_code)
+     
+     df_city = pd.DataFrame(dict(zip(['city_name', 'city_type', 'city_code','city_raion_code','region_code'], zip(*city_dataset))))
+     
+  column_configuration = {
+      "city_name": st.column_config.TextColumn(
+         "Населенный пункт", help="Населенный пункт", max_chars=150, width="large"
+     ),
+     "city_type": st.column_config.TextColumn(
+         "Тип НП",
+         help="Тип НП",
+         width="medium"
+         
+     ),
+     "city_code": st.column_config.TextColumn(
+         "Код НП",
+         help="Код НП",
+         width="small"
+         
+     ), 
+     "city_raion_code": st.column_config.TextColumn(
+         "Код Район / Город",
+         help="Район / Город",
+         width="small"       
+     ), 
+     "region_code": st.column_config.TextColumn(
+         "Код Региона",
+         help="Код Региона",
+         width="small"
+     ), 
+
+    }
+  return df_city,column_configuration,city_raion_name,city_raion_type
+
 conn = init_connection()
 
 st.header("Регионы")
@@ -124,8 +181,20 @@ if len(selected_regions) > 0:
     selection_mode="single-row",
   )
   selected_city_raion = event_df_city_raion.selection.rows
-  if len(selected_city_raion) > 0:
-    st.markdown("Район " + " " + selected_city_raion[0]["region_name"] + " " + selected_city_raion[0]["region_type"])
-  else:  
-    st.markdown("Район или город не выбран.")
+  if len(selected_city_raion) > 0: 
+    df_city,column_configuration,city_raion_name,city_raion_type = get_city_df(df_city_raion,selected_city_raion )
+    st.header("Населенные пункты района " +  " " + city_raion_name + " " + city_raion_type)
+    event_df_city = st.dataframe(
+      df_city,
+      column_config=column_configuration,
+      use_container_width=True,
+      hide_index=True,
+      on_select="rerun",
+      selection_mode="single-row",
+    )
+    selected_city = event_df_city.selection.rows
+    if len(selected_city) > 0:
+      st.markdown("Населенный пункт в районе выбран.") 
+    else:  
+      st.markdown("Населенный пункт в районе не выбран.")
 
