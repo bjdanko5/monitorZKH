@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 import pyodbc
-import Монитор_ЖКХ as mon
-mon.auth_check()
+import utils.utils as utils
+utils.auth_check()
 
 def alltrim(s):
     return s.strip()

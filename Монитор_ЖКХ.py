@@ -44,8 +44,9 @@ def check_password():
 
 if not check_password():
     st.stop()
-
+  
 # Main Streamlit app starts here
 st.write("👋Успешный вход в монитор ЖКХ...")
-st.button("Далее")
+#st.button("Далее")
 st.sidebar.success("Выберите режим мониторинга.")
+st.switch_page("pages/1_🔍_Поиск_Дома.py")
