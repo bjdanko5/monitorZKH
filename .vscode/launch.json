@@ -16,13 +16,17 @@
         },
         {
             "name": "debug streamlit",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
+            "connect": {
+                "port": 8500
+            },
             "program": "/var/www/html/monitorZKH/.venv/bin/streamlit",  // /home/xx/tmp/venv/bin/streamlit",
             "args": [
                 "run",
                 "${file}"
-            ]
+            ],
+            
         }   
     ]
 }

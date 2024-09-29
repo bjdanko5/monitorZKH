@@ -2,9 +2,11 @@ import streamlit as st
 import pyodbc
 import pandas as pd
 import utils.users_db as users_db
+import utils.utils as utils
 # Настройки подключения к базе данных
-
-
+utils.auth_check()
+if st.session_state["username"]=="adm":
+  st.switch_page("Монитор_ЖКХ.py")
 # Получить всех пользователей
 def get_users():
     #conn = get_connection()

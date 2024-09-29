@@ -38,4 +38,8 @@ def auth_check():
         st.write( "Неверный пароль. Пожалуйста, попробуйте ещё раз.")
         st.switch_page("Монитор_ЖКХ.py")
     else:
-        st.write( "Пользователь "+st.session_state.get("username") +" авторизован.")  
+        if st.session_state.get("username")==None:
+            st.write( "Пользователь не авторизован.")
+            st.switch_page("Монитор_ЖКХ.py")
+        else:   
+            st.write( "Пользователь "+st.session_state.get("username") +" авторизован.")  
