@@ -4,39 +4,9 @@ import pyodbc
 import utils.utils as utils
 utils.auth_check()
 
-def alltrim(s):
-    return s.strip()
-def init_connection():
-    try:
-        connection_string = (
-            "DRIVER={ODBC Driver 17 for SQL Server};"
-            "SERVER=" + st.secrets["server"] + ";"
-            "DATABASE=" + st.secrets["database"] + ";"
-            "UID=" + st.secrets["username"] + ";"
-            "PWD=" + st.secrets["password"]
-        )
-        conn = pyodbc.connect(connection_string, timeout=5)
-        return conn
-    except pyodbc.OperationalError as e:
-        # Handle the OperationalError exception
-        error_message = str(e)
-        print(f"Ошибка подключения: {error_message}")
-        # You can add additional error handling code here, such as logging or retrying the connection
-        return None
-#@st.cache_data(ttl=600)
 
-def run_query(query, params=None):
-    if conn is None:
-        return None  # or raise an exception, or handle the error in some other way
-    
-    with conn.cursor() as cur:
-        if params:
-            cur.execute(query, params)
-        else:
-            cur.execute(query)
-        return cur.fetchall()
 def get_regions_dataset() -> pd.DataFrame:  
-  rows = run_query("""
+  rows = utils.run_query("""
       SELECT 
           namespace.NAME, 
           namespace.TYPENAME, 
@@ -54,8 +24,8 @@ def get_regions_dataset() -> pd.DataFrame:
   """)
   return rows
 def get_city_raion_dataset(region_code) -> pd.DataFrame:  
-  params = (alltrim(region_code),)
-  rows = run_query("""
+  params = (utils.alltrim(region_code),)
+  rows = utils.run_query("""
       SELECT
           namespace.NAME,
           namespace.TYPENAME,
@@ -76,8 +46,8 @@ def get_city_raion_dataset(region_code) -> pd.DataFrame:
   """, params)
   return rows
 def get_city_dataset(region_code,city_raion_code) -> pd.DataFrame:  
-  params = (alltrim(region_code),alltrim(city_raion_code),)
-  rows = run_query("""
+  params = (utils.alltrim(region_code),utils.alltrim(city_raion_code),)
+  rows = utils.run_query("""
       SELECT
           namespace.NAME,
           namespace.TYPENAME,
@@ -220,8 +190,8 @@ def is_city( selected_city_raion) -> bool:
      is_city         = filtered_df["is_city"]   
      return (is_city==1)
 
-conn = init_connection()
-
+#conn = utils.init_connection()
+conn = st.session_state["conn"]
 st.header("Регионы")
 df_region,column_configuration = get_region_df()
 
