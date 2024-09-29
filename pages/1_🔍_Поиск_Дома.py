@@ -18,6 +18,9 @@ with st.status("Устанавливается подключение к баз�
         conn = st.session_state["conn"]
         status.update(label="Подключение к базе данных выполнено.",state="complete", expanded=True)   
         st.write("Можно работать...")
+time.sleep (5)       
+status.update(label="БД подключена",state="complete", expanded=False)           
+
         
 
 
