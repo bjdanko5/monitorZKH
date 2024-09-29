@@ -4,6 +4,15 @@ import pyodbc
 import utils.utils as utils
 import hmac
 
+def no_auth_menu():
+    st.sidebar.page_link("Монитор_ЖКХ.py", label="Вход в Монитор ЖКХ")
+
+def auth_menu():
+    st.sidebar.page_link("pages/1_🔍_Поиск_Дома.py", label="Поиск дома")
+    st.sidebar.page_link("pages/2_🦳_Пользователи.py", label="Пользователи",disabled=st.session_state.username != "adm",)
+
+no_auth_menu()
+
 def check_password():
     """Returns `True` if the user had a correct password."""
 
@@ -42,6 +51,7 @@ if not check_password():
   
 # Main Streamlit app starts here
 st.write("👋Успешный вход в монитор ЖКХ...")
+auth_menu()
 #st.button("Далее")
 #st.sidebar.success("Выберите режим мониторинга.")
 #st.switch_page("pages/1_🔍_Поиск_Дома.py")
