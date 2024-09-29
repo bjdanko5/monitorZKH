@@ -32,7 +32,7 @@ def check_password():
 
     # Show inputs for username + password.
     login_form()
-    if "password_correct" in st.session_state:
+    if not"password_correct" in st.session_state:
         st.error("😕 Пользователь не зарегистрирован или пароль неверен")
     return False
 
