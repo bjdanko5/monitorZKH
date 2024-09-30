@@ -8,8 +8,11 @@ def no_auth_menu():
     st.sidebar.page_link("Монитор_ЖКХ.py", label="Вход в Монитор ЖКХ")
 
 def auth_menu():
+    if "username" not in st.session_state or "password_correct" not in st.session_state:
+        return
     st.sidebar.page_link("pages/1_🔍_Поиск_Дома.py", label="Поиск дома")
     st.sidebar.page_link("pages/2_🦳_Пользователи.py", label="Пользователи",disabled=st.session_state.username != "adm",)
+    st.sidebar.page_link("pages/3_🏢_Организации.py", label="Организации",disabled=st.session_state.username != "adm",)
 
 no_auth_menu()
 
@@ -36,7 +39,7 @@ def check_password():
             #del st.session_state["username"]
             st.session_state["username"] =  st.session_state["username"]
     # Return True if the username + password is validated.
-    if st.session_state.get("password_correct", False):
+    if st.session_state.get("password_correct", False) and "username" in st.session_state:
         return True
 
     # Show inputs for username + password.

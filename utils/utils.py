@@ -36,6 +36,13 @@ def run_query(query, params=None):
             cur.execute(query)
         return cur.fetchall()
 def auth_check():
+    if "username" not in st.session_state or "password_correct" not in st.session_state:
+        st.write( "Пользователь не авторизован.")  
+        st.switch_page("Монитор_ЖКХ.py") 
+    else:      
+       st.session_state["password_correct"] =  st.session_state["password_correct"]
+       st.session_state["username"] =  st.session_state["username"] 
+       
     if st.session_state.get("password_correct", False)==False:
         st.write( "Неверный пароль. Пожалуйста, попробуйте ещё раз.")
         st.switch_page("Монитор_ЖКХ.py")
@@ -46,6 +53,10 @@ def auth_check():
         else:   
             st.write( "Пользователь "+st.session_state.get("username") +" авторизован.")  
 def get_conn_status():
+    if "conn" in st.session_state and st.session_state["conn"] is not None:
+        conn = st.session_state["conn"]
+        st.session_state["conn"] =conn
+        return conn 
     with st.status("Устанавливается подключение к базе данных...", state="running", expanded=True) as status:
         st.write("Ожидайте...")
         st.session_state["conn"] = utils.init_connection()
@@ -58,8 +69,9 @@ def get_conn_status():
             st.stop()   
         else:        
             conn = st.session_state["conn"]
+            st.session_state["conn"] =conn
             status.update(label="Подключение к базе данных выполнено.",state="complete", expanded=True)   
             st.write("Можно работать...")
-    time.sleep (5)       
+    #time.sleep (5)       
     status.update(label="БД подключена",state="complete", expanded=False)
     return conn                
