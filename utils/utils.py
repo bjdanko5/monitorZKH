@@ -3,8 +3,26 @@ import pandas as pd
 import pyodbc
 import time
 import utils.utils as utils
+def exit_user():
+    if "password_correct" in st.session_state or "username" in st.session_state:
+        del st.session_state.password_correct
+        del st.session_state.username
+        st.switch_page("Монитор_ЖКХ.py")
+
 def alltrim(s):
     return s.strip()
+def no_auth_menu():
+    st.sidebar.page_link("Монитор_ЖКХ.py", label="Вход в Монитор ЖКХ")
+    st.sidebar.page_link("pages/0_👈_Выход.py", label="Выход")
+def auth_menu():
+    if "username" not in st.session_state or "password_correct" not in st.session_state:
+        return
+    st.sidebar.page_link("pages/1_🔍_Поиск_Дома.py", label="Поиск дома")
+    st.sidebar.page_link("pages/2_🦳_Пользователи.py", label="Пользователи",disabled=st.session_state.username != "adm",)
+    st.sidebar.page_link("pages/3_🏢_Организации.py", label="Организации",disabled=st.session_state.username != "adm",)
+    with st.sidebar:
+        info_success = st.empty()
+        info_success.success("Пользователь "+ st.session_state.username +" авторизован")
 def init_connection():
     try:
         connection_string = (
@@ -36,6 +54,7 @@ def run_query(query, params=None):
             cur.execute(query)
         return cur.fetchall()
 def auth_check():
+    no_auth_menu()
     if "username" not in st.session_state or "password_correct" not in st.session_state:
         st.write( "Пользователь не авторизован.")  
         st.switch_page("Монитор_ЖКХ.py") 
@@ -51,7 +70,8 @@ def auth_check():
             st.write( "Пользователь не авторизован.")
             st.switch_page("Монитор_ЖКХ.py")
         else:   
-            st.write( "Пользователь "+st.session_state.get("username") +" авторизован.")  
+            #st.write( "Пользователь "+st.session_state.get("username") +" авторизован.")
+            auth_menu()  
 def get_conn_status():
     if "conn" in st.session_state and st.session_state["conn"] is not None:
         conn = st.session_state["conn"]
