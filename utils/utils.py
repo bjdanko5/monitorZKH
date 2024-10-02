@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import pyodbc
 import time
+import sqlalchemy
 def setup_op_status(op_status_container,first_visit_status="Готово"):
     if first_visit_op_status():
         show_op_status(op_status_container,first_visit_status)
@@ -83,7 +84,7 @@ def menu():
     #st.sidebar.page_link("pages/Организации.py", label="Организации",disabled=st.session_state.username != "adm",icon = ":material/source_environment:")
 
    
-def init_connection():
+def init_connection1():
     try:
         connection_string = (
             "DRIVER={ODBC Driver 17 for SQL Server};"
@@ -100,6 +101,21 @@ def init_connection():
         print(f"Ошибка подключения: {error_message}")
         # You can add additional error handling code here, such as logging or retrying the connection
         return None
+def init_connection():    
+    from sqlalchemy.engine import URL
+    connection_string = (
+            "DRIVER={ODBC Driver 17 for SQL Server};"
+            "SERVER=" + st.secrets["server"] + ";"
+            "DATABASE=" + st.secrets["database"] + ";"
+            "UID=" + st.secrets["username"] + ";"
+            "PWD=" + st.secrets["password"]
+        )
+    #connection_string = "DRIVER={ODBC Driver 17 for SQL Server};SERVER=dagger;DATABASE=test;UID=user;PWD=password"
+    connection_url = URL.create("mssql+pyodbc", query={"odbc_connect": connection_string})
+    from sqlalchemy import create_engine
+    engine = create_engine(connection_url)
+    conn = engine.connect()
+    return conn
 #@st.cache_data(ttl=600)
 
 def run_query(query, params=None):
@@ -156,4 +172,9 @@ def get_conn_status():
             st.write("Можно работать...")
     #time.sleep (5)       
     status.update(label="БД подключена",state="complete", expanded=False)
-    return conn                
+    return conn 
+def conn_and_auth_check():
+    auth_check()
+    conn = get_conn_status()
+    return conn
+               

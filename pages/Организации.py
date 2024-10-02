@@ -2,8 +2,8 @@ import streamlit as st
 import pandas as pd
 import utils.utils as utils
 import utils.orgs_db as orgs_db
-utils.auth_check()
-conn = utils.get_conn_status()
+conn = utils.conn_and_auth_check()
+
     
 def fill_orgs_container():
     orgs_df = orgs_db.get_orgs()
@@ -25,11 +25,11 @@ def fill_orgs_container():
 def add_org_form():
     with st.form(key='add_org_form'):
         name = st.text_input("Наименование")
-        submit_button = st.form_submit_button("Добавить Организацию")
+        submit_button = st.form_submit_button("Добавить")
 
         if submit_button:
             orgs_db.add_org(name)
-            utils.queue_op_status("Организация добавлена успешно!")
+            utils.queue_op_status("Организация добавлена" )
             st.rerun()
 
 # Форма для обновления пользователя 
@@ -44,7 +44,7 @@ def update_org_form():
   
         if update_button:
             orgs_db.update_org(update_id, update_name)
-            utils.queue_op_status("Организация изменена","success")
+            utils.queue_op_status("Реквизиты Организации изменены","success")
             del st.session_state.selected_org_id
             st.rerun()
 
@@ -60,6 +60,14 @@ def delete_org_form():
             utils.queue_op_status("Организация удалена","success")
             del st.session_state.selected_org_id
             st.rerun()
+
+def cancel_selection():
+    if "selected_org_id" in st.session_state:
+        del st.session_state.selected_org_id 
+    if "selected_org_name" in st.session_state:    
+        del st.session_state.selected_org_name
+    st.rerun()
+
 def orgs_df_callback():
     selected_org = st.session_state.event_orgs_df.selection.rows   
     if len(selected_org) > 0:
@@ -75,12 +83,7 @@ def orgs_df_callback():
         if "selected_org_name" in st.session_state:    
             del st.session_state.selected_org_name
         utils.show_op_status(op_status_container,"Организация не выбрана.")
-def cancel_selection():
-    if "selected_org_id" in st.session_state:
-        del st.session_state.selected_org_id 
-    if "selected_org_name" in st.session_state:    
-        del st.session_state.selected_org_name
-    st.rerun()
+
 
 header_container = st.empty()
 header_container.header("Организации")
@@ -120,11 +123,4 @@ with col3:
         delete_org_form()
 
 op_status_container = st.empty()
-utils.setup_op_status(op_status_container,"Выберите Организацию для изменения или нажмите Добавить Организацию.")
-#if utils.first_visit_op_status():
-#    utils.show_op_status(op_status_container,"Выберите Организацию для изменения или нажмите Добавить Организацию.")
-#else:
-#    if "op_status_queued" in st.session_state:
-#        utils.show_op_status(op_status_container,st.session_state.op_status_queued,st.session_state.op_status_queued_type)
-#        del st.session_state.op_status_queued
-#        del st.session_state.op_status_queued_type
+utils.setup_op_status(op_status_container,"Выберите Организацию для изменения или Добавьте Организацию.")

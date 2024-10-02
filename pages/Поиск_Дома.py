@@ -3,9 +3,7 @@ import pandas as pd
 import pyodbc
 import utils.utils as utils
 import time
-utils.auth_check()
-conn = utils.get_conn_status()
-
+conn = utils.conn_and_auth_check()
 def get_regions_dataset() -> pd.DataFrame:  
   rows = utils.run_query("""
       SELECT 
