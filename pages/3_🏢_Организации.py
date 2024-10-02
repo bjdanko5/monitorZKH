@@ -19,19 +19,7 @@ def fill_orgs_container():
     }
     return orgs_df,column_configuration 
 
-def queue_op_status(op_status):
-    st.session_state.op_status_queued = op_status
-def show_op_status(op_status):
-    st.session_state.op_status_container = st.session_state.op_status_container
-    with st.session_state.op_status_container:
-        st.success(op_status)        
-def first_visit_op_status():
-    if 'first_visit' not in st.session_state:
-        st.session_state.first_visit = True
-        return st.session_state.first_visit
-    else:
-        st.session_state.first_visit = False
-    return st.session_state.first_visit
+
 #Форма для добавления пользователя
 @st.dialog("Добавить Организацию")
 def add_org_form():
@@ -41,7 +29,7 @@ def add_org_form():
 
         if submit_button:
             orgs_db.add_org(name)
-            queue_op_status("Организация добавлена успешно!")
+            utils.queue_op_status("Организация добавлена успешно!")
             st.rerun()
 
 # Форма для обновления пользователя 
@@ -56,7 +44,7 @@ def update_org_form():
   
         if update_button:
             orgs_db.update_org(update_id, update_name)
-            queue_op_status("Организация обновлена успешно!")
+            utils.queue_op_status("Организация обновлена успешно!")
             st.rerun()
 
 # Форма для удаления пользователя
@@ -68,7 +56,7 @@ def delete_org_form():
 
         if delete_button:
             orgs_db.delete_org(delete_id)
-            queue_op_status("Организация удалена успешно!")
+            utils.queue_op_status("Организация удалена успешно!")
             st.rerun()
 def orgs_df_callback():
     selected_org = st.session_state.event_orgs_df.selection.rows   
@@ -77,13 +65,13 @@ def orgs_df_callback():
             filtered_org = orgs_df.iloc[org]
             st.session_state.selected_org_id = int(filtered_org["id"])
             st.session_state.selected_org_name = str(filtered_org["name"])
-            show_op_status("Выбрана Организация " + st.session_state.selected_org_name)
+            utils.show_op_status(op_status_container,"Выбрана Организация " + st.session_state.selected_org_name)
     else:
         if "selected_org_id" in st.session_state:
             del st.session_state.selected_org_id 
         if "selected_org_name" in st.session_state:    
             del st.session_state.selected_org_name
-        show_op_status("Организация не выбрана.")
+        utils.show_op_status(op_status_container,"Организация не выбрана.")
 
 st.header("Организации")
 orgs_df,column_configuration = fill_orgs_container()
@@ -110,14 +98,15 @@ with col2:
 with col3:
     if st.button("Удалить",disabled = not "selected_org_id" in st.session_state):
         delete_org_form()
-       
-if first_visit_op_status():
-    st.session_state.op_status_container = st.empty()
-    show_op_status("Выберите Организацию для изменения или нажмите Добавить Организацию.")
+#if "op_status_container" in st.session_state:    
+#    op_status_container = st.session_state.op_status_container   
+op_status_container = st.empty()
+if utils.first_visit_op_status():
+    utils.show_op_status(op_status_container,"Выберите Организацию для изменения или нажмите Добавить Организацию.")
 else:
     if "op_status_queued" in st.session_state:
-        show_op_status(st.session_state.op_status_queued)
+        utils.show_op_status(op_status_container,st.session_state.op_status_queued)
         del st.session_state.op_status_queued
-    st.session_state.op_status_container = st.session_state.op_status_container    
+    #st.session_state.op_status_container = st.session_state.op_status_container    
 #show_op_status("Выберите Организацию для изменения или нажмите Добавить Организацию.")
 #st.markdown("Выберите Организацию для изменения или нажмите Добавить Организацию.") 

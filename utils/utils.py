@@ -2,7 +2,21 @@ import streamlit as st
 import pandas as pd
 import pyodbc
 import time
-import utils.utils as utils
+#import utils.utils as utils
+def queue_op_status(op_status):
+    st.session_state.op_status_queued = op_status
+def show_op_status(op_status_container,op_status):
+    #st.session_state.op_status_container = st.session_state.op_status_container
+    #with st.session_state.op_status_container:
+    with op_status_container:
+        st.success(op_status)        
+def first_visit_op_status():
+    if 'first_visit' not in st.session_state:
+        st.session_state.first_visit = True
+        return st.session_state.first_visit
+    else:
+        st.session_state.first_visit = False
+    return st.session_state.first_visit
 def exit_user():
     if "password_correct" in st.session_state or "username" in st.session_state:
         del st.session_state.password_correct
@@ -79,7 +93,7 @@ def get_conn_status():
         return conn 
     with st.status("Устанавливается подключение к базе данных...", state="running", expanded=True) as status:
         st.write("Ожидайте...")
-        st.session_state["conn"] = utils.init_connection()
+        st.session_state["conn"] = init_connection()
         if st.session_state.get("conn") is None:
             del st.session_state["password_correct"]
             status.update(label="Не удалось подключиться к базе данных.",state="error", expanded=True)
