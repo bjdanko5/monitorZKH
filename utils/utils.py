@@ -2,14 +2,30 @@ import streamlit as st
 import pandas as pd
 import pyodbc
 import time
-#import utils.utils as utils
-def queue_op_status(op_status):
+def setup_op_status(op_status_container,first_visit_status="Готово"):
+    if first_visit_op_status():
+        show_op_status(op_status_container,first_visit_status)
+    else:
+        if "op_status_queued" in st.session_state:
+            show_op_status(op_status_container,st.session_state.op_status_queued,st.session_state.op_status_queued_type)
+            del st.session_state.op_status_queued
+            del st.session_state.op_status_queued_type
+
+def queue_op_status(op_status,status_type="info"):
     st.session_state.op_status_queued = op_status
-def show_op_status(op_status_container,op_status):
-    #st.session_state.op_status_container = st.session_state.op_status_container
-    #with st.session_state.op_status_container:
-    with op_status_container:
-        st.success(op_status)        
+    st.session_state.op_status_queued_type = status_type
+def show_op_status(op_status_container,op_status,status_type="info"):
+    if status_type == "success":
+        with op_status_container:
+            st.info(op_status,icon=":material/thumb_up:")        
+
+    if status_type == "error":
+        with op_status_container:
+            st.info(op_status,icon=":material/error:")        
+   
+    if status_type == "info":
+        with op_status_container:
+            st.info(op_status,icon=":material/help:")        
 def first_visit_op_status():
     if 'first_visit' not in st.session_state:
         st.session_state.first_visit = True
@@ -21,23 +37,52 @@ def exit_user():
     if "password_correct" in st.session_state or "username" in st.session_state:
         del st.session_state.password_correct
         del st.session_state.username
-        st.switch_page("Монитор_ЖКХ.py")
+        st.switch_page("pages/Вход.py")
+        
 
 def alltrim(s):
     return s.strip()
-def no_auth_menu():
-    st.sidebar.page_link("Монитор_ЖКХ.py", label="Вход в Монитор ЖКХ")
-    st.sidebar.page_link("pages/0_👈_Выход.py", label="Выход")
-def auth_menu():
-    if "username" not in st.session_state or "password_correct" not in st.session_state:
-        return
-    st.sidebar.page_link("pages/1_🔍_Поиск_Дома.py", label="Поиск дома")
-    st.sidebar.page_link("pages/2_🦳_Пользователи.py", label="Пользователи",disabled=st.session_state.username != "adm",)
-    st.sidebar.page_link("pages/3_🏢_Организации.py", label="Организации",disabled=st.session_state.username != "adm",)
-    with st.sidebar:
-        info_success = st.empty()
-        info_success.success("Пользователь "+ st.session_state.username +" авторизован")
-@st.
+def menu():
+    conn = get_conn_status()
+    pages = {
+    "Монитор ЖКХ": [
+        st.Page("pages/Вход.py", title="Вход", icon = ":material/login:"),   
+        st.Page("pages/Выход.py", title="Выход", icon = ":material/logout:")
+    ],
+    }
+    user_pages = {
+    "Пользователям": [
+        st.Page("pages/Поиск_Дома.py", title="Поиск дома", icon = ":material/search:"),   
+    ],
+    }
+    adm_pages = {
+    "Администраторам": [
+        st.Page("pages/Пользователи.py", title="Пользователи", icon = ":material/group:"),   
+        st.Page("pages/Организации.py", title="Организации", icon = ":material/source_environment:"),   
+    ],
+    }
+    adm_pages.update(user_pages)
+    role_pages = {
+        "adm": adm_pages,
+        "user": user_pages
+    }
+    info = st.sidebar.empty()
+    if st.session_state.get("password_correct", False) and"username" in st.session_state:
+        pages.update(role_pages.get(st.session_state.username, {}))
+        info.success("Пользователь "+ st.session_state.username +" авторизован", icon=":material/thumb_up:")
+    else:
+        info.error("Пользователь не авторизован", icon=":material/error:")
+        
+    
+    pg = st.navigation(pages)
+    pg.run()
+    return pg
+
+    #st.sidebar.page_link("pages/Поиск_Дома.py", label="Поиск дома",icon = ":material/search:")
+    #st.sidebar.page_link("pages/Пользователи.py", label="Пользователи",disabled=st.session_state.username != "adm",icon = ":material/group:")
+    #st.sidebar.page_link("pages/Организации.py", label="Организации",disabled=st.session_state.username != "adm",icon = ":material/source_environment:")
+
+   
 def init_connection():
     try:
         connection_string = (
@@ -69,24 +114,26 @@ def run_query(query, params=None):
             cur.execute(query)
         return cur.fetchall()
 def auth_check():
-    no_auth_menu()
+    #pg = no_auth_menu()
     if "username" not in st.session_state or "password_correct" not in st.session_state:
         st.write( "Пользователь не авторизован.")  
-        st.switch_page("Монитор_ЖКХ.py") 
+        st.switch_page("pages/Вход.py")
+        
     else:      
        st.session_state["password_correct"] =  st.session_state["password_correct"]
        st.session_state["username"] =  st.session_state["username"] 
        
     if st.session_state.get("password_correct", False)==False:
         st.write( "Неверный пароль. Пожалуйста, попробуйте ещё раз.")
-        st.switch_page("Монитор_ЖКХ.py")
+        st.switch_page("pages/Вход.py")
+        
     else:
         if st.session_state.get("username")==None:
             st.write( "Пользователь не авторизован.")
-            st.switch_page("Монитор_ЖКХ.py")
-        else:   
-            #st.write( "Пользователь "+st.session_state.get("username") +" авторизован.")
-            auth_menu()  
+            st.switch_page("pages/Вход.py")
+            
+        #else:   
+            #auth_menu()  
 def get_conn_status():
     if "conn" in st.session_state and st.session_state["conn"] is not None:
         conn = st.session_state["conn"]

@@ -8,10 +8,10 @@ conn = utils.get_conn_status()
 def fill_orgs_container():
     orgs_df = orgs_db.get_orgs()
     column_configuration = {
-        "org_id": st.column_config.TextColumn(
+        "id": st.column_config.TextColumn(
             "ИД", help="ИД", width="small"
         ),
-        "org_name": st.column_config.TextColumn(
+        "name": st.column_config.TextColumn(
             "Наименование",
             help="Тип НП",
             width="medium"       
@@ -33,18 +33,18 @@ def add_org_form():
             st.rerun()
 
 # Форма для обновления пользователя 
-@st.dialog("Обновить Организацию")
+@st.dialog("Изменить Реквизиты Организации")
 def update_org_form():
     with st.form(key='update_org_form'):
         update_id = st.session_state.selected_org_id
         selected_org_name = st.session_state.selected_org_name
         update_name_old = st.text_input("Старое Наименование",disabled=True,value=selected_org_name)
         update_name = st.text_input("Новое Наименование")
-        update_button = st.form_submit_button("Обновить Организацию")
+        update_button = st.form_submit_button("Изменить")
   
         if update_button:
             orgs_db.update_org(update_id, update_name)
-            utils.queue_op_status("Организация обновлена успешно!")
+            utils.queue_op_status("Организация изменена","success")
             del st.session_state.selected_org_id
             st.rerun()
 
@@ -53,11 +53,11 @@ def update_org_form():
 def delete_org_form():
     with st.form(key='delete_org_form'):
         delete_id = st.session_state.selected_org_id
-        delete_button = st.form_submit_button("(Опасно) Удалить Организацию")
+        delete_button = st.form_submit_button("(Опасно) Удалить")
 
         if delete_button:
             orgs_db.delete_org(delete_id)
-            utils.queue_op_status("Организация удалена успешно!")
+            utils.queue_op_status("Организация удалена","success")
             del st.session_state.selected_org_id
             st.rerun()
 def orgs_df_callback():
@@ -82,11 +82,13 @@ def cancel_selection():
         del st.session_state.selected_org_name
     st.rerun()
 
-orgs_df,column_configuration = fill_orgs_container()
+header_container = st.empty()
+header_container.header("Организации")
 orgs_container = st.empty()
+orgs_df,column_configuration = fill_orgs_container()
+
 if not "selected_org_id" in st.session_state:
-    st.header("Организации")
-    with orgs_container:
+    with orgs_container:       
         event_orgs_df= st.dataframe(
             orgs_df,
             column_config=column_configuration,
@@ -97,8 +99,8 @@ if not "selected_org_id" in st.session_state:
             key="event_orgs_df"
             )
 else:
-    st.header("Выбрана Организация")
-    with orgs_container:
+    header_container.header("Организация")
+    with orgs_container:      
         st.info(st.session_state.selected_org_name)
 
 
@@ -111,16 +113,18 @@ with col1:
         if st.button("Добавить",disabled = "selected_org_id" in st.session_state):            
             add_org_form()
 with col2:
-    if st.button("Обновить",disabled = not "selected_org_id" in st.session_state):
+    if st.button("Изменить",disabled = not "selected_org_id" in st.session_state):
         update_org_form()
 with col3:
     if st.button("Удалить",disabled = not "selected_org_id" in st.session_state):
         delete_org_form()
 
 op_status_container = st.empty()
-if utils.first_visit_op_status():
-    utils.show_op_status(op_status_container,"Выберите Организацию для изменения или нажмите Добавить Организацию.")
-else:
-    if "op_status_queued" in st.session_state:
-        utils.show_op_status(op_status_container,st.session_state.op_status_queued)
-        del st.session_state.op_status_queued
+utils.setup_op_status(op_status_container,"Выберите Организацию для изменения или нажмите Добавить Организацию.")
+#if utils.first_visit_op_status():
+#    utils.show_op_status(op_status_container,"Выберите Организацию для изменения или нажмите Добавить Организацию.")
+#else:
+#    if "op_status_queued" in st.session_state:
+#        utils.show_op_status(op_status_container,st.session_state.op_status_queued,st.session_state.op_status_queued_type)
+#        del st.session_state.op_status_queued
+#        del st.session_state.op_status_queued_type
