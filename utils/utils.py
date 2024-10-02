@@ -37,6 +37,7 @@ def auth_menu():
     with st.sidebar:
         info_success = st.empty()
         info_success.success("Пользователь "+ st.session_state.username +" авторизован")
+@st.
 def init_connection():
     try:
         connection_string = (
