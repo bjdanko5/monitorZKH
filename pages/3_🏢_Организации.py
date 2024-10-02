@@ -45,6 +45,7 @@ def update_org_form():
         if update_button:
             orgs_db.update_org(update_id, update_name)
             utils.queue_op_status("Организация обновлена успешно!")
+            del st.session_state.selected_org_id
             st.rerun()
 
 # Форма для удаления пользователя
@@ -57,6 +58,7 @@ def delete_org_form():
         if delete_button:
             orgs_db.delete_org(delete_id)
             utils.queue_op_status("Организация удалена успешно!")
+            del st.session_state.selected_org_id
             st.rerun()
 def orgs_df_callback():
     selected_org = st.session_state.event_orgs_df.selection.rows   
