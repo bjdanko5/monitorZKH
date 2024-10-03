@@ -10,15 +10,15 @@ def get_orgs():
     query = "SELECT * FROM mzkh_orgs"
     df = pd.read_sql(query, conn) 
     return df
-def add_org(name):
+def add_org(name,id_role):
     conn = st.session_state["conn"]
-    query = "INSERT INTO mzkh_orgs (name) VALUES (:name)"
-    conn.execute(text(query), {"name": name})
+    query = "INSERT INTO mzkh_orgs (name,id_role) VALUES (:name, :id_role)"
+    conn.execute(text(query), {"name": name, "id_role": id_role})
     conn.commit()
-def update_org(org_id, name):
+def update_org(org_id, name,id_role):
     conn = st.session_state["conn"]
-    query = "UPDATE mzkh_orgs SET name = :name WHERE id = :org_id"
-    conn.execute(text(query), {"name": name, "org_id": org_id})
+    query = "UPDATE mzkh_orgs SET name = :name, id_role = :id_role WHERE id = :org_id"
+    conn.execute(text(query), {"name": name, "org_id": org_id, "id_role": id_role})
     conn.commit()
 def delete_org(org_id):
     conn = st.session_state["conn"]

@@ -12,8 +12,13 @@ def fill_roles_container():
         "name": st.column_config.TextColumn(
             "Наименование",
             help="Наименование",
-            width="medium"       
-        )
+            width="medium"                   
+        ),
+        "target": st.column_config.TextColumn(
+        "Цель",
+         help="Целевая сущность, например:Пользователь, Организация",
+         width="small"       
+        ),
     }
     return roles_df,column_configuration 
 
@@ -51,15 +56,17 @@ with col1:
             added_rows = st.session_state["event_roles_df"]["added_rows"]
             deleted_rows = st.session_state["event_roles_df"]["deleted_rows"]
             # Update existing roleanizations
-            if len(edited_rows)> 0 or len(added_rows) > 0 and len(deleted_rows) >0:
+            if len(edited_rows)> 0 or len(added_rows) > 0 or len(deleted_rows) >0:
                 for row_id, row in edited_rows.items():
                     role_name = row["name"]
+                    role_target = row["target"]
                     role_id = int(original_roles_df.iloc[int(row_id)]["id"])
-                    roles_db.update_role(role_id, role_name)
+                    roles_db.update_role(role_id, role_name, role_target)
                 # Add new roleanizations
                 for row in added_rows:
                     role_name = row["name"]
-                    roles_db.add_role(role_name)
+                    role_target = row["target"]
+                    roles_db.add_role(role_name, role_target)
                 # Delete roleanizations
                 for row_id in deleted_rows:
                     role_id = int(original_roles_df.iloc[int(row_id)]["id"])
