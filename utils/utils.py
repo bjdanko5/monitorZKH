@@ -60,6 +60,7 @@ def menu():
     "Администраторам": [
         st.Page("pages/Пользователи.py", title="Пользователи", icon = ":material/group:"),   
         st.Page("pages/Организации.py", title="Организации", icon = ":material/source_environment:"),   
+        st.Page("pages/Роли.py", title="Роли", icon = ":material/guardian:"),   
     ],
     }
     adm_pages.update(user_pages)
