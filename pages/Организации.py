@@ -35,6 +35,7 @@ header_container = st.empty()
 header_container.header("Организации")
 
 orgs_container = st.container()
+roles_df = fill_roles_df()
 orgs_df,column_configuration = fill_orgs_container()
 original_orgs_df = orgs_df.copy()
 
@@ -62,8 +63,9 @@ with col1:
             # Update existing organizations
             if len(edited_rows)> 0 or len(added_rows) > 0 or len(deleted_rows) >0:
                 for row_id, row in edited_rows.items():
-                    org_name = row["name"]
-                    id_role  = row["id_role"]
+                    org_name = row.get("name", original_orgs_df.iloc[int(row_id)]["name"])
+                    id_role = int(row.get("id_role", original_orgs_df.iloc[int(row_id)]["id_role"]))
+                    #id_role = row["id_role"] if row["id_role"] else original_orgs_df.iloc[int(row_id)]["id_role"]
                     org_id = int(original_orgs_df.iloc[int(row_id)]["id"])
                     orgs_db.update_org(org_id, org_name,id_role)
                 # Add new organizations

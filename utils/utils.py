@@ -116,7 +116,7 @@ def init_connection():
     from sqlalchemy import create_engine
     engine = create_engine(connection_url)
     conn = engine.connect()
-    return conn
+    return engine,conn
 #@st.cache_data(ttl=600)
 
 def run_query(query, params=None):
@@ -155,10 +155,12 @@ def get_conn_status():
     if "conn" in st.session_state and st.session_state["conn"] is not None:
         conn = st.session_state["conn"]
         st.session_state["conn"] =conn
+        engine = st.session_state["engine"]
+        st.session_state["engine"] = engine
         return conn 
     with st.status("Устанавливается подключение к базе данных...", state="running", expanded=True) as status:
         st.write("Ожидайте...")
-        st.session_state["conn"] = init_connection()
+        st.session_state["engine"],st.session_state["conn"] = init_connection()
         if st.session_state.get("conn") is None:
             del st.session_state["password_correct"]
             status.update(label="Не удалось подключиться к базе данных.",state="error", expanded=True)
