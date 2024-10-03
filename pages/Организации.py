@@ -70,8 +70,8 @@ with col1:
                     orgs_db.update_org(org_id, org_name,id_role)
                 # Add new organizations
                 for row in added_rows:
-                    org_name = row["name"]
-                    id_role  = row["id_role"]
+                    org_name = row.get("name", original_orgs_df.iloc[int(row_id)]["name"])
+                    id_role = int(row.get("id_role", original_orgs_df.iloc[int(row_id)]["id_role"]))
                     orgs_db.add_org(org_name,id_role)
                 # Delete organizations
                 for row_id in deleted_rows:
