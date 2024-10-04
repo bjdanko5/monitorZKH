@@ -7,7 +7,19 @@ from sqlalchemy import text
 conn = utils.conn_and_auth_check()  
 def get_orgs():
     conn = st.session_state["conn"]
-    query = "SELECT * FROM mzkh_orgs"
+    query = """
+        SELECT 
+        o.*,
+        r.name AS role_name
+        FROM 
+        mzkh_orgs o
+        LEFT JOIN mzkh_roles r
+            ON o.id_role = r.id
+        WHERE 
+        r.target = 'Организация'
+        ORDER BY 
+        o.name
+    """
     df = pd.read_sql(query, conn) 
     return df
 def add_org(name,id_role):
