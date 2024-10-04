@@ -15,7 +15,8 @@ def get_roles(target=None):
         query = text("SELECT * FROM mzkh_roles")
         params = {}
     result = conn.execute(query, params)
-    df = pd.DataFrame(result.fetchall())
+    rows = result.fetchall()
+    df = pd.DataFrame(rows)
     return df
 def add_role(name, target):
     conn = st.session_state["conn"]

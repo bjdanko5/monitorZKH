@@ -3,7 +3,6 @@ import pandas as pd
 import utils.utils as utils
 import utils.roles_db as roles_db
 conn = utils.conn_and_auth_check()
-
 def fill_roles_container():
     roles_df = roles_db.get_roles()
     column_configuration = {
@@ -17,11 +16,11 @@ def fill_roles_container():
         ),
         "target": st.column_config.SelectboxColumn(
         "Цель 🔽",
-        options=("Пользователь", "Организация"),    
-        help="Цель",
-        width="small",
-        required = True
-    ),
+            options= ['Пользователь                  ', 'Организация                   '],    
+            help="Цель",
+            width="small",
+            required = True
+        ),
     }
     def roles_df_callback():
         #это заглушка на будущее
@@ -44,7 +43,7 @@ def fill_roles_container():
         for row_id in deleted_rows:
             role_id = int(original_roles_df.iloc[int(row_id)]["id"])
             roles_db.delete_role(role_id)
-
+    roles_container = st.container()
     with roles_container:       
         event_roles_df= st.data_editor(
                 roles_df,
@@ -63,7 +62,7 @@ def fill_roles_container():
 header_container = st.empty()
 header_container.header("Роли")
 
-roles_container = st.container()
+
 roles_df,column_configuration = fill_roles_container()
 original_roles_df = roles_df.copy()
 

@@ -31,8 +31,7 @@ def fill_orgs_container():
         width="small",
         required = True
     ),
-
-}
+    }
     def orgs_df_callback():
         def get_id_role_by_role_name(role_name):
             return int(roles_df.loc[roles_df['name'] == role_name, 'id'].iloc[0])
@@ -83,7 +82,6 @@ roles_df = fill_roles_df()
 orgs_df,column_configuration = fill_orgs_container()
 original_orgs_df = orgs_df.copy()
 
-  
 op_status_container = st.empty()
 col1, col2, col3 = st.columns(3)
 with col1: 
