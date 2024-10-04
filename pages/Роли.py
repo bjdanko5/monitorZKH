@@ -16,7 +16,7 @@ def fill_roles_container():
         ),
         "target": st.column_config.SelectboxColumn(
         "Цель 🔽",
-            options= ['Пользователь                  ', 'Организация                   '],    
+            options= ['Пользователь', 'Организация'],    
             help="Цель",
             width="small",
             required = True

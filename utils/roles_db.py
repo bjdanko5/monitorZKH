@@ -16,7 +16,10 @@ def get_roles(target=None):
         params = {}
     result = conn.execute(query, params)
     rows = result.fetchall()
-    df = pd.DataFrame(rows)
+    if rows: 
+        df = pd.DataFrame(rows)
+    else:  
+        df = pd.DataFrame(columns=['id', 'name', 'target'])
     return df
 def add_role(name, target):
     conn = st.session_state["conn"]
