@@ -1,18 +1,12 @@
 import streamlit as st
 import pandas as pd
-import pyodbc
 import utils.utils as utils
 import hmac
-if "conn" in st.session_state:
-    try:
-        import utils.users_db as users_db
-    except ImportError as e:
-        print("Pressed Reload in Browser...")
 #pg = utils.auth_menu()
 
 
 #pg = utils.no_auth_menu()
-st.title("Мониторинг ЖКХ")
+st.title("Монитор ЖКХ")
 def check_password():
     """Returns `True` if the user had a correct password."""
 
@@ -25,13 +19,12 @@ def check_password():
             st.form_submit_button("Войти", on_click=password_entered, type="primary", use_container_width=True)
 
     def password_entered():
-        """Checks whether a password entered by the user is correct."""     
-        #user_df = users_db.get_user_by_username(st.session_state["username"])
-        #if not user_df.empty and hmac.compare_digest(
-        if st.session_state["username"] in st.secrets["passwords"] and hmac.compare_digest(
+        """Checks whether a password entered by the user is correct."""
+        if st.session_state["username"] in st.secrets[
+            "passwords"
+        ] and hmac.compare_digest(
             st.session_state["password"],
             st.secrets.passwords[st.session_state["username"]],
-            #user_df["password"],
         ):
             st.session_state["password_correct"] = True
             del st.session_state["password"]  # Don't store the username or password.
