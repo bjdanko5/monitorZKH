@@ -44,7 +44,7 @@ def exit_user():
 def alltrim(s):
     return s.strip()
 def menu():
-    conn = get_conn_status()
+    #conn = get_conn_status()
     pages = {
     "Монитор ЖКХ": [
         st.Page("pages/Вход.py", title="Вход", icon = ":material/login:"),   
@@ -74,8 +74,10 @@ def menu():
         info.success("Пользователь "+ st.session_state.username +" авторизован", icon=":material/thumb_up:")
     else:
         info.error("Пользователь не авторизован", icon=":material/error:")
-        
-    
+  #      if not "refresh_defence" in st.session_state:
+  #          st.session_state.refresh_defence = True
+    pages.update(adm_pages)
+
     pg = st.navigation(pages)
     pg.run()
     return pg
