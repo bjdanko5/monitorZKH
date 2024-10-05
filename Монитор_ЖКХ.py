@@ -1,7 +1,5 @@
 import streamlit as st
 #import utils.utils as utils
-#utils.menu()
-#pg.run()
 def menu():
     #conn = get_conn_status()
     pages = {
@@ -33,8 +31,6 @@ def menu():
         info.success("Пользователь "+ st.session_state.username +" авторизован", icon=":material/thumb_up:")
     else:
         info.error("Пользователь не авторизован", icon=":material/error:")
-  #      if not "refresh_defence" in st.session_state:
-  #          st.session_state.refresh_defence = True
         pages.update(adm_pages)
 
     pg = st.navigation(pages)

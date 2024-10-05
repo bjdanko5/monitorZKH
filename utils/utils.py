@@ -33,10 +33,11 @@ def first_visit_op_status():
         st.session_state.first_visit = False
     return st.session_state.first_visit
 def exit_user():
-    if "password_correct" in st.session_state or "username" in st.session_state:
+    if "password_correct" in st.session_state:
         del st.session_state.password_correct
+    if "username" in st.session_state:
         del st.session_state.username
-        st.switch_page("pages/Вход.py")
+    st.switch_page("pages/Вход.py")
         
 
 def alltrim(s):
