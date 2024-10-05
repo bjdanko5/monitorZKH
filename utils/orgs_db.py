@@ -1,13 +1,12 @@
 import streamlit as st
-import pyodbc
 import pandas as pd
-import utils.orgs_db as orgs_db
-import utils.utils as utils
 from sqlalchemy import text
+
+import utils.utils as utils
+
 conn = utils.conn_and_auth_check()  
 def get_orgs(role_name = None):
     conn = st.session_state["conn"]
-    engine = st.session_state["engine"]
     if  role_name:
         query = """
         SELECT 

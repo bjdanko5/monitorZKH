@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import pyodbc
-import time
-import sqlalchemy
 def setup_op_status(op_status_container,first_visit_status="Готово"):
     if first_visit_op_status():
         show_op_status(op_status_container,first_visit_status)

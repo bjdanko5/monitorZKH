@@ -1,8 +1,12 @@
 import streamlit as st
 import pandas as pd
-import utils.utils as utils
-import utils.orgs_db as orgs_db
-import utils.roles_db as roles_db
+try:
+    import utils.utils as utils
+    import utils.orgs_db as orgs_db
+    import utils.roles_db as roles_db
+except ImportError as e:
+    print("Pressed Reload in Browser...")
+
 conn = utils.conn_and_auth_check()
 def fill_roles_df():
     roles_df = roles_db.get_roles('Организация')
