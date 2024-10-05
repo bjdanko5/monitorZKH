@@ -1,4 +1,6 @@
 import streamlit as st
+if __name__ == '__main__':
+    st.rerun()
 import pandas as pd
 import utils.utils as utils
 import utils.roles_db as roles_db

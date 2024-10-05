@@ -103,20 +103,24 @@ def init_connection1():
         # You can add additional error handling code here, such as logging or retrying the connection
         return None
 def init_connection():    
+    engine,conn,error_message = None,None,None
     from sqlalchemy.engine import URL
-    connection_string = (
-            "DRIVER={ODBC Driver 17 for SQL Server};"
-            "SERVER=" + st.secrets["server"] + ";"
-            "DATABASE=" + st.secrets["database"] + ";"
-            "UID=" + st.secrets["username"] + ";"
-            "PWD=" + st.secrets["password"]
-        )
-    #connection_string = "DRIVER={ODBC Driver 17 for SQL Server};SERVER=dagger;DATABASE=test;UID=user;PWD=password"
-    connection_url = URL.create("mssql+pyodbc", query={"odbc_connect": connection_string})
-    from sqlalchemy import create_engine
-    engine = create_engine(connection_url)
-    conn = engine.connect()
-    return engine,conn
+    try:
+        connection_string = (
+                "DRIVER={ODBC Driver 17 for SQL Server};"
+                "SERVER=" + st.secrets["server"] + ";"
+                "DATABASE=" + st.secrets["database"] + ";"
+                "UID=" + st.secrets["username"] + ";"
+                "PWD=" + st.secrets["password"]
+            )
+        #connection_string = "DRIVER={ODBC Driver 17 for SQL Server};SERVER=dagger;DATABASE=test;UID=user;PWD=password"
+        connection_url = URL.create("mssql+pyodbc", query={"odbc_connect": connection_string})
+        from sqlalchemy import create_engine
+        engine = create_engine(connection_url)
+        conn = engine.connect()
+    except Exception as e:
+        error_message = str(e)
+    return engine,conn,error_message
 #@st.cache_data(ttl=600)
 
 def run_query(query, params=None):
@@ -160,10 +164,13 @@ def get_conn_status():
         return conn 
     with st.status("Устанавливается подключение к базе данных...", state="running", expanded=True) as status:
         st.write("Ожидайте...")
-        st.session_state["engine"],st.session_state["conn"] = init_connection()
+        st.session_state["engine"],st.session_state["conn"],error_message = init_connection()
         if st.session_state.get("conn") is None:
-            del st.session_state["password_correct"]
+            if "password_correct" in st.session_state:
+                del st.session_state["password_correct"]
             status.update(label="Не удалось подключиться к базе данных.",state="error", expanded=True)
+            st.write("Cообщение от сервера:")
+            st.write(error_message)   
             st.write("Выполнен Выход пользователя из Монитора ЖКХ.")   
             if st.button("Войти ещё раз"):
                 st.switch_page("Монитор_ЖКХ.py") 
