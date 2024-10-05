@@ -6,7 +6,7 @@ try:
 except ImportError as e:
         print("Pressed Reload in Browser...")
 
-#conn = utils.get_conn_status()
+#
 
 st.title("Мониторинг ЖКХ")
 def check_password():
@@ -22,6 +22,7 @@ def check_password():
 
     def password_entered():
         """Checks whether a password entered by the user is correct."""     
+        #conn = utils.get_conn_status()
         #user_df = users_db.get_user_by_username(st.session_state["username"])
         #if not user_df.empty and hmac.compare_digest(
         if st.session_state["username"] in st.secrets["passwords"] and hmac.compare_digest(
