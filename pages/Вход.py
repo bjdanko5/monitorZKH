@@ -1,17 +1,13 @@
 import streamlit as st
-import pandas as pd
-import pyodbc
-import utils.utils as utils
 import hmac
-if "conn" in st.session_state:
-    try:
-        import utils.users_db as users_db
-    except ImportError as e:
+try:
+   import utils.utils as utils   
+   import utils.users_db as users_db
+except ImportError as e:
         print("Pressed Reload in Browser...")
-#pg = utils.auth_menu()
 
+#conn = utils.get_conn_status()
 
-#pg = utils.no_auth_menu()
 st.title("Мониторинг ЖКХ")
 def check_password():
     """Returns `True` if the user had a correct password."""
@@ -44,20 +40,9 @@ def check_password():
 
     # Show inputs for username + password.
     login_form()
-    #if not"password_correct" in st.session_state:
-    #    st.error("Пользователь не зарегистрирован или пароль неверен",icon=":material/error:")
-    #return False
-
-
-if not check_password():
-    st.stop()
   
+if not check_password():
+    st.stop()  
 # Main Streamlit app starts here
-
 st.info("Выберите необходимое действие на навигационной панели...",icon=":material/help:")
-utils.auth_check()
-#pg = utils.auth_menu()
-#pg.run()
-#st.button("Далее")
-#st.sidebar.success("Выберите режим мониторинга.")
-#st.switch_page("pages/1_🔍_Поиск_Дома.py")
+#utils.auth_check()

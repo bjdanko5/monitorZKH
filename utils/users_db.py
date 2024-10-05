@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
-from sqlalchemy import text
-import utils.utils as utils
-conn = utils.conn_and_auth_check()  
+from sqlalchemy import text 
 def get_user_by_name(name):
     conn = st.session_state["conn"]
     query = """

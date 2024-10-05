@@ -1,10 +1,6 @@
 import streamlit as st
 import pandas as pd
 from sqlalchemy import text
-
-import utils.utils as utils
-
-conn = utils.conn_and_auth_check()  
 def get_orgs(role_name = None):
     conn = st.session_state["conn"]
     if  role_name:
