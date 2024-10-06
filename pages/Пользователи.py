@@ -5,6 +5,7 @@ try:
     import utils.users_db as users_db
     import utils.roles_db as roles_db
     import utils.orgs_db as orgs_db
+    import widgets.ВыборОрганизации as so
 except ImportError as e:
     print("Pressed Reload in Browser...")
 conn = utils.conn_and_auth_check()
@@ -14,7 +15,7 @@ def fill_roles_df():
 def fill_orgs_df():
     orgs_df = orgs_db.get_orgs()
     return orgs_df
-def fill_users_container():
+def fill_users_container():  
     orgs_df = orgs_db.get_orgs()
     users_df = users_db.get_users()
     roles_df = fill_roles_df()
@@ -116,11 +117,13 @@ def fill_users_container():
 header_container = st.empty()
 header_container.header("Пользователи")
 
+so_container = st.container()
+so.ВыборОрганизации(so_container)
+
 orgs_df = fill_orgs_df()
 roles_df = fill_roles_df()
 users_df,column_configuration = fill_users_container()
 original_users_df = users_df.copy()
-
 op_status_container = st.empty()
 col1, col2, col3 = st.columns(3)
 with col1: 
