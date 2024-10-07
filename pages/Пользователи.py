@@ -17,7 +17,10 @@ def fill_orgs_df():
     return orgs_df
 def fill_users_container():  
     orgs_df = orgs_db.get_orgs()
-    users_df = users_db.get_users()
+    if "selected_org_id" in st.session_state:
+        users_df = users_db.get_users_by_org_id(st.session_state.selected_org_id)
+    else:      
+        users_df = users_db.get_users()
     roles_df = fill_roles_df()
     column_configuration = {
     "id": st.column_config.NumberColumn(
@@ -29,10 +32,17 @@ def fill_users_container():
         width="medium",
         required=True       
     ),
+    "fullname": st.column_config.TextColumn(
+        "Полное Наименование",
+        help="Полное Наименование",
+        width="medium",
+        required=True       
+    ),
+
         "password": st.column_config.TextColumn(
         "Пароль",
         help="Пароль",
-        width="medium"      
+        width="small"      
     ),
     "id_role": st.column_config.NumberColumn(
         "ИД Роли",
@@ -51,7 +61,8 @@ def fill_users_container():
     "id_org": st.column_config.NumberColumn(
         "ИД Организации",
         help="ИД Организации",
-        width="small"   
+        width="small",
+        disabled=True   
     ),   
     "org_name": st.column_config.SelectboxColumn(
         "Организация 🔽",
@@ -66,7 +77,7 @@ def fill_users_container():
         def get_id_role_by_role_name(role_name):
             return int(roles_df.loc[roles_df['name'] == role_name, 'id'].iloc[0])
         def get_id_org_by_org_name(org_name):
-            return int(roles_df.loc[orgs_df['name'] == role_name, 'id'].iloc[0])
+            return int(orgs_df.loc[orgs_df['name'] == org_name, 'id'].iloc[0])
 
         #это заглушка на будущее
         ss = st.session_state["event_users_df"]
@@ -77,22 +88,23 @@ def fill_users_container():
         for row_id, row in edited_rows.items():
             user_name = row.get("name", original_users_df.iloc[int(row_id)]["name"])
             password = row.get("password", original_users_df.iloc[int(row_id)]["password"])
+            user_fullname = row.get("fullname", original_users_df.iloc[int(row_id)]["fullname"])
             role_name = row.get("role_name", original_users_df.iloc[int(row_id)]["role_name"])
             org_name = row.get("org_name", original_users_df.iloc[int(row_id)]["org_name"])
             id_role = get_id_role_by_role_name(role_name)
             id_org = get_id_org_by_org_name(org_name)
             user_id = int(original_users_df.iloc[int(row_id)]["id"])
-            users_db.update_user(user_id, user_name, password, id_role,role_name,id_org,org_name)
+            users_db.update_user(user_id, user_name,user_fullname, password, id_role,id_org)
         # Add new useranizations
         for row in added_rows:
             user_name = row.get("name", "Пользователь")
+            user_fullname = row.get("name", "Полное Имя")
             password = row.get("password","Пароль" )
             role_name = row.get("role_name", "Пользователь")
             org_name = row.get("org_name", "Организация")
             id_role = get_id_role_by_role_name(role_name)
             id_org = get_id_org_by_org_name(org_name)
-            user_id = int(original_users_df.iloc[int(row_id)]["id"])
-            users_db.add_user(user_id, user_name, password, id_role,id_org)
+            users_db.add_user( user_name,user_fullname, password, id_role,id_org)
         # Delete useranizations
         for row_id in deleted_rows:
             user_id = int(original_users_df.iloc[int(row_id)]["id"])
@@ -114,6 +126,7 @@ def fill_users_container():
     return users_df,column_configuration 
 
 #Основная программа страницы
+
 header_container = st.empty()
 header_container.header("Пользователи")
 
