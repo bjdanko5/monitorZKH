@@ -5,22 +5,14 @@ class TaggedParams:
     tag: str
     params: dict
 try:
-    import utils.Поиск_Дома_db as hierarhy_db
+    import utils.Поиск_Дома_db as hierarchy_db
 except ImportError as e:
     print("Pressed Reload in Browser...")
 #conn = utils.conn_and_auth_check()
-def ВыборОрганизации(selected_hierarhy_container,params):
-    params = {"level":0,"parentobjid":0}
-    #selected_hierarhy = (0,0 )
-    if st.session_state.get("tagged_params_dict") is None:
-       st.session_state.tagged_params_dict=[]
-    else:
-        tagged_params_dict = st.session_state.tagged_params_dict   
-    selected_hierarhy_tag = str(params.level)+"_"+str(params.parentobjid)
-    
-    tagged_params_dict[selected_hierarhy_tag] = {"params":params}
+def ПоискДома(selected_hierarchy_container,params):
+  
 
-    hierarhy_df = hierarhy_db.hierarhy_df(selected_hierarhy.level,selected_hierarhy.parentobjid)
+    hierarchy_df = hierarchy_db.get_hierarchy(params["level"],params["parentobjid"])
     column_configuration = {
         "objectid": st.column_config.NumberColumn(
             "objectid",
@@ -70,34 +62,50 @@ def ВыборОрганизации(selected_hierarhy_container,params):
         
     }
 
-    def on_select_hierarhy_df():
-        if len(st.session_state.event_hierarhy_df.selection.rows) > 0:
-            selected_row_id = st.session_state.event_hierarhy_df.selection.rows[0]          
-            selected_org_id   = hierarhy_df.iloc[selected_row_id]["id"]   
-            selected_org_name = hierarhy_df.iloc[selected_row_id]["name"]
-            st.session_state.selected_org_id = selected_org_id
-            st.session_state.selected_org_name = selected_org_name
+    def on_select_hierarchy_df():
+        if len(st.session_state.event_hierarchy_df.selection.rows) > 0:
+            selected_row_id = st.session_state.event_hierarchy_df.selection.rows[0]  
+        if st.session_state.get("tagged_params_dict") is None:
+            st.session_state.tagged_params_dict={}
+         
+        tagged_params_dict = st.session_state.tagged_params_dict   
+        selected_level   = hierarchy_df.iloc[selected_row_id]["level"]   
+        selected_parentobjid = hierarchy_df.iloc[selected_row_id]["parentobjid"]
+        selected_name= hierarchy_df.iloc[selected_row_id]["name"]
+        selected_typename= hierarchy_df.iloc[selected_row_id]["typename"]
+        selected_objectid = hierarchy_df.iloc[selected_row_id]["objectid"]
+        params = {"level":selected_level,"parentobjid":selected_parentobjid,"objectid":selected_objectid,"name":selected_name,"typename":selected_typename}
+        tagged_params_dict = st.session_state.tagged_params_dict   
+        selected_hierarchy_tag = str(selected_level)+"_"+str(selected_parentobjid)           
+        tagged_params_dict[selected_hierarchy_tag] = {"params":params}       
+        st.session_state.tagged_params_dict = tagged_params_dict   
 
-    if not "selected_org_id" in st.session_state:
-        event_hierarhy_df = st.dataframe(
-        hierarhy_df, 
+    selected_hierarchy_tag = str(params["level"])+"_"+str(params["parentobjid"])
+    #
+    if st.session_state.get("tagged_params_dict") is None:
+            st.session_state.tagged_params_dict={}
+    tagged_params_dict = st.session_state.tagged_params_dict        
+    if not selected_hierarchy_tag in tagged_params_dict:
+        event_hierarchy_df = st.dataframe(
+        hierarchy_df, 
         column_config=column_configuration,
         use_container_width=True,
         hide_index=True,
-        on_select=on_select_hierarhy_df,
+        on_select=on_select_hierarchy_df,
         selection_mode="single-row",
-        key="event_hierarhy_df")
+        key="event_hierarchy_df")
     else:    
-        with selected_hierarhy_container:
-            if "selected_org_button" in st.session_state:
+        with selected_hierarchy_container:
+            if "selected_org_button"+selected_hierarchy_tag in st.session_state:
                 st.empty()
-    
-        selected_org_button = st.button(
-            label = st.session_state.selected_org_name,
+        selected_hierarchy_button = st.button(
+            label = str(st.session_state.tagged_params_dict[selected_hierarchy_tag]["params"]["typename"]+" "+
+                        st.session_state.tagged_params_dict[selected_hierarchy_tag]["params"]["name"]
+                        )
+            ,
             type  ='primary',
-            key   = "selected_org_button" +selected_hierarhy_tag
+            key   = "selected_org_button" +selected_hierarchy_tag
         )   
-        if selected_org_button:
-            del st.session_state.selected_org_id 
-            del st.session_state.selected_org_name 
+        if selected_hierarchy_button:
+            del tagged_params_dict[selected_hierarchy_tag]
             st.rerun()
