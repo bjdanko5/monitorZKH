@@ -17,6 +17,18 @@ def ВыборОрганизации(selected_org_container):
             help="Наименование",
             width="medium"       
         ),
+        "id_role": st.column_config.NumberColumn(
+            "ИД Роли", 
+            help="ИД Роли", 
+            width="small"
+        ),
+        "role_name": st.column_config.TextColumn(
+            "Наименование Роли",
+            help="Наименование Роли",
+            width="medium"       
+        ),
+        
+
     }
     def on_select_orgs_df():
         if len(st.session_state.event_orgs_df.selection.rows) > 0:

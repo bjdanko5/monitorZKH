@@ -44,7 +44,7 @@ def fill_users_container():
         help="Пароль",
         width="small"      
     ),
-    "id_role": st.column_config.NumberColumn(
+    "role_id": st.column_config.NumberColumn(
         "ИД Роли",
         help="ИД Роли",
         width="small",
@@ -58,7 +58,7 @@ def fill_users_container():
         width="small",
         required = True
     ),
-    "id_org": st.column_config.NumberColumn(
+    "org_id": st.column_config.NumberColumn(
         "ИД Организации",
         help="ИД Организации",
         width="small",

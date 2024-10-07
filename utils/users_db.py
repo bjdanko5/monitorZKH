@@ -5,7 +5,10 @@ def get_user_by_name(name):
     conn = st.session_state["conn"]
     query = """
     SELECT 
-    u.*,
+    u.id,
+    u.name,
+    u.fullname,
+    u.password,
     r.id AS role_id,
     r.name AS role_name,
     o.id AS org_id,
@@ -28,13 +31,17 @@ def get_user_by_name(name):
     if rows: 
         df = pd.DataFrame(rows)
     else:  
-        df = pd.DataFrame(columns=['id', 'name','fullname', 'password', 'id_role', 'role_name', 'id_org', 'org_name'])
+        df = pd.DataFrame(columns=['id', 'name','fullname', 'password', 'role_id', 'role_name', 'org_id', 'org_name'])
     return df
 def get_users_by_org_id(org_id):
     conn = st.session_state["conn"]
     query = """
     SELECT 
-    u.*,
+        u.id,
+    u.name,
+    u.fullname,
+    u.password,
+
     r.id AS role_id,
     r.name AS role_name,
     o.id AS org_id,
@@ -57,14 +64,18 @@ def get_users_by_org_id(org_id):
     if rows: 
         df = pd.DataFrame(rows)
     else:  
-        df = pd.DataFrame(columns=['id', 'name','fullname', 'password', 'id_role', 'role_name', 'id_org', 'org_name'])
+        df = pd.DataFrame(columns=['id', 'name','fullname', 'password', 'role_id', 'role_name', 'org_id', 'org_name'])
     return df
 
 def get_user_by_id(id):
     conn = st.session_state["conn"]
     query = """
     SELECT 
-    u.*,
+        u.id,
+    u.name,
+    u.fullname,
+    u.password,
+
     r.id AS role_id,
     r.name AS role_name,
     o.id AS org_id,
@@ -87,7 +98,7 @@ def get_user_by_id(id):
     if rows: 
         df = pd.DataFrame(rows)
     else:  
-        df = pd.DataFrame(columns=['id', 'name','fullname', 'password', 'id_role', 'role_name', 'id_org', 'org_name'])
+        df = pd.DataFrame(columns=['id', 'name','fullname', 'password', 'role_id', 'role_name', 'org_id', 'org_name'])
     return df
 
 def get_users(role_name = None):
@@ -95,7 +106,11 @@ def get_users(role_name = None):
     if  role_name:
         query = """
         SELECT 
-        u.*,
+            u.id,
+    u.name,
+    u.fullname,
+    u.password,
+
         r.id AS role_id,
         r.name AS role_name,
         o.id AS org_id,
@@ -116,7 +131,11 @@ def get_users(role_name = None):
     else:
         query = """
         SELECT 
-        u.*,
+            u.id,
+    u.name,
+    u.fullname,
+    u.password,
+
         r.id AS role_id,
         r.name AS role_name,
         o.id AS org_id,
@@ -138,7 +157,7 @@ def get_users(role_name = None):
     if rows: 
         df = pd.DataFrame(rows)
     else:  
-        df = pd.DataFrame(columns=['id', 'name', 'fullname','password', 'id_role', 'role_name', 'id_org', 'org_name'])
+        df = pd.DataFrame(columns=['id', 'name','fullname', 'password', 'role_id', 'role_name', 'org_id', 'org_name'])
     return df
 
 def add_user(name,fullname, password, id_role,id_org):
