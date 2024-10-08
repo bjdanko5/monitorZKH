@@ -1,5 +1,15 @@
 import streamlit as st
-#import utils.utils as utils
+import pathlib
+import sys
+
+# Get the absolute path of the parent directory
+parent_dir = pathlib.Path(__file__).parent.parent
+
+# Append the utils directory to the sys.path
+sys.path.append(str(parent_dir / 'utils'))
+sys.path.append(str(parent_dir / 'widgets'))
+sys.path.append(str(parent_dir / 'pages'))
+
 def menu():
     #conn = get_conn_status()
     pages = {
@@ -12,14 +22,14 @@ def menu():
     "Пользователям": [
         st.Page("pages/Поиск_Дома.py", title="Поиск дома",icon = ":material/search:"),   
         st.Page("pages/Дом.py", title="Найденнный Дом",icon = ":material/home:"),  
-        st.Page("pages/Паспорт_МКД.py", title=" "),
-        st.Page("pages/Жилищный_фонд.py", title=" "),
-        st.Page("pages/Придомовые_структуры.py", title=" "),
-        st.Page("pages/Аварийные_объекты.py", title=" ") 
-        #st.Page("pages/Паспорт_МКД.py", title="Паспорт МКД", icon=":material/assignment_ind:"),
-        #st.Page("pages/Жилищный_фонд.py", title="Жилищный фонд", icon=":material/assignment_ind:"),
-        #st.Page("pages/Придомовые_структуры.py", title="Придомовые структуры",icon= ":material/assignment_ind:"),
-        #st.Page("pages/Аварийные_объекты.py", title="Аварийные объекты жилищного фонда",icon= ":material/assignment_ind:",) 
+        #st.Page("pages/Паспорт_МКД.py", title=" "),
+        #st.Page("pages/Жилищный_фонд.py", title=" "),
+        #st.Page("pages/Придомовые_структуры.py", title=" "),
+        #st.Page("pages/Аварийные_объекты.py", title=" ") 
+        st.Page("pages/Паспорт_МКД.py", title="Паспорт МКД", icon=":material/assignment_ind:"),
+        st.Page("pages/Жилищный_фонд.py", title="Жилищный фонд", icon=":material/assignment_ind:"),
+        st.Page("pages/Придомовые_структуры.py", title="Придомовые структуры",icon= ":material/assignment_ind:"),
+        st.Page("pages/Аварийные_объекты.py", title="Аварийные объекты жилищного фонда",icon= ":material/assignment_ind:",) 
   
     ],
     }
