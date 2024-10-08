@@ -8,6 +8,10 @@ def ПоискДома(selected_hierarchy_container,params):
   
 
     hierarchy_df = hierarchy_db.get_hierarchy(params["level"],params["parentobjid"])
+    if hierarchy_df.empty:
+        ВыборДома(params["parentobjid"])
+        return
+    
     column_configuration = {
         "objectid": st.column_config.NumberColumn(
             "objectid",
@@ -105,8 +109,11 @@ def ПоискДома(selected_hierarchy_container,params):
             st.session_state.tagged_params_dict = {k: v for k, v in st.session_state.tagged_params_dict.items() if int(k) <= int(selected_hierarchy_tag)-1}
             #del tagged_params_dict[selected_hierarchy_tag]
             st.rerun()
-def ВыборДома(selected_hierarchy_container,street_objectid):
+def ВыборДома(street_objectid):
     houses_df = hierarchy_db.get_houses(street_objectid)
+    if houses_df.empty:
+        st.write("Домов нет")
+        return
     column_configuration = {
         "street_name": st.column_config.TextColumn(
             "Улица",
@@ -150,51 +157,15 @@ def ВыборДома(selected_hierarchy_container,street_objectid):
         )
     }
 
-    def on_select_hierarchy_df():
-        if len(st.session_state.event_hierarchy_df.selection.rows) > 0:
-            selected_row_id = st.session_state.event_hierarchy_df.selection.rows[0]  
-        if st.session_state.get("tagged_params_dict") is None:
-            st.session_state.tagged_params_dict={}
-         
-        tagged_params_dict = st.session_state.tagged_params_dict   
-        selected_level   = hierarchy_df.iloc[selected_row_id]["level"]   
-        selected_parentobjid = hierarchy_df.iloc[selected_row_id]["parentobjid"]
-        selected_name= hierarchy_df.iloc[selected_row_id]["name"]
-        selected_typename= hierarchy_df.iloc[selected_row_id]["typename"]
-        selected_objectid = hierarchy_df.iloc[selected_row_id]["objectid"]
-        params = {"level":selected_level,"parentobjid":selected_parentobjid,"objectid":selected_objectid,"name":selected_name,"typename":selected_typename}
-        tagged_params_dict = st.session_state.tagged_params_dict   
-        selected_hierarchy_tag = str(selected_level)          
-        tagged_params_dict[selected_hierarchy_tag] = {"params":params}       
-        st.session_state.tagged_params_dict = tagged_params_dict   
-
-    selected_hierarchy_tag = str(params["level"])
-    #
-    if st.session_state.get("tagged_params_dict") is None:
-            st.session_state.tagged_params_dict={}
-    tagged_params_dict = st.session_state.tagged_params_dict        
-    if not selected_hierarchy_tag in tagged_params_dict:
-        event_hierarchy_df = st.dataframe(
-        hierarchy_df, 
-        column_config=column_configuration,
-        use_container_width=True,
-        hide_index=True,
-        on_select=on_select_hierarchy_df,
-        selection_mode="single-row",
-        key="event_hierarchy_df")
-    else:    
-        with selected_hierarchy_container:
-            if "selected_org_button"+selected_hierarchy_tag in st.session_state:
-                st.empty()
-        selected_hierarchy_button = st.button(
-            label = str(st.session_state.tagged_params_dict[selected_hierarchy_tag]["params"]["typename"]+" "+
-                        st.session_state.tagged_params_dict[selected_hierarchy_tag]["params"]["name"]
-                        )
-            ,
-            type  ='primary',
-            key   = "selected_org_button" +selected_hierarchy_tag
-        )   
-        if selected_hierarchy_button:
-            st.session_state.tagged_params_dict = {k: v for k, v in st.session_state.tagged_params_dict.items() if int(k) <= int(selected_hierarchy_tag)-1}
-            #del tagged_params_dict[selected_hierarchy_tag]
-            st.rerun()
+    def on_select_houses_df():
+        pass
+    
+    event_houses_df = st.dataframe(
+    houses_df, 
+    column_config=column_configuration,
+    use_container_width=True,
+    hide_index=True,
+    on_select=on_select_houses_df,
+    selection_mode="single-row",
+    key="event_houses_df")
+    

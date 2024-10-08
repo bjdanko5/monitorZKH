@@ -34,7 +34,7 @@ def get_hierarchy(level,parentobjid):
         df = pd.DataFrame(columns=["objectid", "name", "typename", "level", "parentobjid", "house_objectid", "housenum", "addnum1", "addnum2"])
     return df
 
-def get_houses(level,parentobjid):
+def get_houses(parentobjid):
     conn = st.session_state["conn"]
     query = """
             select
