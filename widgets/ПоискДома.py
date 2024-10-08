@@ -158,8 +158,15 @@ def ВыборДома(street_objectid):
     }
 
     def on_select_houses_df():
-        pass
-    
+         
+         if len(st.session_state.event_houses_df.selection.rows) > 0:
+            selected_row_id = st.session_state.event_houses_df.selection.rows[0]  
+            st.session_state["selected_house_objectid"] = houses_df.iloc[selected_row_id]["house_objectid"]       
+            
+         else:   
+           if "selected_house_objectid" in st.session_state:
+            del st.session_state["selected_house_objectid"]
+            st.rerun()
     event_houses_df = st.dataframe(
     houses_df, 
     column_config=column_configuration,
@@ -168,4 +175,5 @@ def ВыборДома(street_objectid):
     on_select=on_select_houses_df,
     selection_mode="single-row",
     key="event_houses_df")
-    
+    if "selected_house_objectid" in st.session_state:
+        st.switch_page("pages/Дом.py")
