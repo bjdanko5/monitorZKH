@@ -1,6 +1,14 @@
 import streamlit as st
 import pathlib
 import sys
+from logtail import LogtailHandler
+import logging
+
+handler = LogtailHandler(source_token="HuXAzztxnhkthASvbRxaZv2a")
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.handlers = []
+logger.addHandler(handler)
 
 # Get the absolute path of the parent directory
 parent_dir = pathlib.Path(__file__).parent.parent

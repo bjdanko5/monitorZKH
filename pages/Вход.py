@@ -3,6 +3,14 @@ import hmac
 #try:
 import utils.utils as utils   
 import utils.users_db as users_db
+from logtail import LogtailHandler
+import logging
+
+handler = LogtailHandler(source_token="HuXAzztxnhkthASvbRxaZv2a")
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.handlers = []
+logger.addHandler(handler)
 #except ImportError as e:
 #       print("Pressed Reload in Browser...")
 
@@ -37,13 +45,18 @@ def check_password():
     
     # Return True if the username + password is validated.
     if st.session_state.get("password_correct", False) and "username" in st.session_state:
-       return True
+        logger.info("Вход разрешен: " + st.session_state["username"]) 
+        return True
 
     # Show inputs for username + password.
     login_form()
   
 if not check_password():
+    logger.info("Не авторизован: " + st.session_state["username"]) 
     st.stop()  
+else:
+    logger.info("Авторизован: " + st.session_state["username"]) 
+    
 # Main Streamlit app starts here
 st.info("Выберите необходимое действие на навигационной панели...",icon=":material/help:")
 #utils.auth_check()
