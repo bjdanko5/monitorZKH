@@ -185,7 +185,7 @@ def format_address(df):
                 address += df[level_type].iloc[0] + " " + df[level].iloc[0] + ", "
         
         # Add street and house number
-        address += df["street_name"].iloc[0] + ", "
+        address += df["street_typename"].iloc[0] + " " + df["street_name"].iloc[0] + ", "
         address += df["housenum"].iloc[0] + " "
         
         # Add additional address details

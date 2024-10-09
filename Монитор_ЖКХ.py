@@ -33,6 +33,7 @@ def menu():
   
     ],
     }
+ 
     adm_pages = {
     "Администраторам": [
         st.Page("pages/Пользователи.py", title="Пользователи", icon = ":material/group:"),   
@@ -54,8 +55,9 @@ def menu():
         pages.update(adm_pages)
     
     pg = st.navigation(pages)
-    #st.set_page_config(layout='wide' if pg.title == 'Пользователи' else 'centered')
+    
     pg.run()
+
     return pg
 st.set_page_config(layout='wide')
 menu()

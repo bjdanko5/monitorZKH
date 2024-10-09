@@ -1,16 +1,43 @@
-FROM python:3.10.12
+#FROM python:3.10.12-alpine
+FROM ubuntu:22.04
+#FROM mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04
+RUN apt update
+RUN apt install -y python3.10 python3-pip
+RUN pip3 install --upgrade pip
 
 WORKDIR /var/www/html/monitorZKH
 
 COPY . /var/www/html/monitorZKH
 
-RUN ls -la /var/www/html/monitorZKH/*
-
-RUN ls -la /var/www/html/monitorZKH/utils/*
-
 RUN pip install -r requirements.txt
+RUN apt-get update && apt-get install -y \
+	curl apt-transport-https debconf-utils gnupg2 
 
-RUN apt-get update && apt-get install -y libodbc1
+# adding custom MS repository
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+RUN curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list > /etc/apt/sources.list.d/mssql-release.list
+
+# install SQL Server drivers and tools
+RUN apt-get update && ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools
+RUN echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.bashrc
+RUN /bin/bash -c "source ~/.bashrc"
+
+# Add SQL Server ODBC Driver 17 for Ubuntu 22.04
+
+
+#RUN curl https://packages.microsoft.com/keys/microsoft.asc | tee /etc/apt/trusted.gpg.d/microsoft.asc
+#RUN curl https://packages.microsoft.com/keys/microsoft.asc | tee /etc/apt/keyrings/mssql2022.key
+#RUN curl https://packages.microsoft.com/config/ubuntu/22.04/mssql-server-2022.list | tee /etc/apt/sources.list.d/mssql-server-2022.list
+#RUN curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list | tee /etc/apt/sources.list.d/mssql-release.list
+#RUN apt-get update
+#RUN apt-get install -y unixodbc-dev
+#RUN ACCEPT_EULA=Y apt-get -y install mssql-server mssql-tools unixodbc-dev
+#RUN ACCEPT_EULA=Y apt-get install -y --allow-unauthenticated msodbcsql17
+#RUN ACCEPT_EULA=Y apt-get install -y --allow-unauthenticated mssql-tools
+#RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bash_profile
+#RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
+#RUN . ~/.bashrc
+# optional: for unixODBC development headers
 
 EXPOSE 8503
 
@@ -18,4 +45,4 @@ HEALTHCHECK CMD curl -f http://localhost:8503/_stcore/health || exit 1
 
 ENTRYPOINT ["streamlit", "run", "Монитор_ЖКХ.py", "--server.port=8503", "--server.address=0.0.0.0"]
 
-ENV  PYTHONPATH="/var/www/html/monitorZKH:/var/www/html/monitorZKH/utils"
+ENV  PYTHONPATH="/var/www/html/monitorZKH:/var/www/html/monitorZKH/utils:/var/www/html/monitorZKH/widgets:/var/www/html/monitorZKH/utils/pages"
