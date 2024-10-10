@@ -32,12 +32,12 @@ def check_password():
         """Checks whether a password entered by the user is correct."""     
         conn = utils.get_conn_status()
         user_df = users_db.get_user_by_name(st.session_state["username"])
-        if not user_df.empty and hmac.compare_digest(
-        #if st.session_state["username"] in st.secrets["passwords"] and hmac.compare_digest(
-            st.session_state["password"],
-            #st.secrets.passwords[st.session_state["username"]],
-            str(user_df["password"][0]),
-        ):
+        if not user_df.empty and st.session_state["password"] == str(user_df["password"][0]):
+          
+        #if not user_df.empty and hmac.compare_digest(
+        #    st.session_state["password"],
+        #    str(user_df["password"][0]),
+        #):
             st.session_state["password_correct"] = True
             del st.session_state["password"]  # Don't store the username or password.
             #del st.session_state["username"]

@@ -11,7 +11,7 @@ except ImportError as e:
 
 from logtail import LogtailHandler
 import logging
-
+Версия ="0.0.2"
 handler = LogtailHandler(source_token="HuXAzztxnhkthASvbRxaZv2a")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -28,7 +28,7 @@ sys.path.append(str(parent_dir / 'pages'))
 
 def menu():
 
-    st.sidebar.html("<small style='color: #fff; mix-blend-mode: difference;'>Версия 0.0.1</small>")
+    st.sidebar.html("<small style='color: #fff; mix-blend-mode: difference;'>Версия "+Версия+"</small>")
     #conn = get_conn_status()
     pages = {
     "Монитор ЖКХ": [
