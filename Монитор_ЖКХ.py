@@ -19,6 +19,8 @@ sys.path.append(str(parent_dir / 'widgets'))
 sys.path.append(str(parent_dir / 'pages'))
 
 def menu():
+
+    st.sidebar.html("<small style='color: rgba(0, 0, 0, 0.5);'>Версия 0.0.1</small>")
     #conn = get_conn_status()
     pages = {
     "Монитор ЖКХ": [
