@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Перейти в директорию /var/www/html/monitorZKH
+echo "Переход в директорию /var/www/html/monitorZKH... $(date)"
+cd /var/www/html/monitorZKH
+
+# Собрать образ Docker с тегом monitorzkh:latest, используя файл Dockerfile_monitorzkh, без кэша
+echo "Сборка образа Docker monitorzkh:latest... $(date)"
+start_time=$(date +%s)
+docker buildx build -t monitorzkh:latest --no-cache -f Dockerfile_monitorzkh .
+end_time=$(date +%s)
+echo "Время сборки: $(($end_time - $start_time)) секунд"
+
+# Перейти в директорию /home/roo
+echo "Переход в директорию /home/roo... $(date)"
+cd /home/roo
+
+# Сохранить образ Docker в файл monitorzkh.tar
+echo "Сохранение образа Docker в файл monitorzkh.tar... $(date)"
+start_time=$(date +%s)
+docker save monitorzkh | pv > monitorzkh.tar
+end_time=$(date +%s)
+echo "Время сохранения образа: $(($end_time - $start_time)) секунд"
+
+# Копировать файл monitorzkh.tar на удаленный сервер по адресу 192.168.10.130 в директорию /var/www/html/
+echo "Копирование файла monitorzkh.tar на удаленный сервер... $(date)"
+scp monitorzkh.tar user@192.168.10.130:/var/www/html/monitorzkh.tar || {
+  echo -e "\033[31mОшибка при копировании файла: $?\033[0m"
+  exit 1
+}
+
+# Подключиться к удаленному серверу по SSH, выполнить скрипт UpgradeMonitorZKH в директории /var/www/html/,
+# вывести вывод скрипта на экран и сохранить его в файл upgrade.log на удаленном сервере,
+# а также вывести вывод скрипта на экран и сохранить его в файл upgrade.log на локальном компьютере
+echo "Выполнение скрипта UpgradeMonitorZKH на удаленном сервере... $(date)"
+start_time=$(date +%s)
+ssh -t user@192.168.10.130 "cd /var/www/html/ && ./UpgradeMonitorZKH | tee upgrade.log" | tee upgrade.log
+end_time=$(date +%s)
+echo "Время выполнения скрипта: $(($end_time - $start_time)) секунд"
+
+# Обработка возможных ошибок
+set -e
+trap 'echo "Ошибка при выполнении скрипта"; exit 1' ERR

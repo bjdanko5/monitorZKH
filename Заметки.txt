@@ -9,3 +9,6 @@ echo ‘export PATH=”$PATH:/opt/mssql-tools/bin”‘ >> ~/.bashrc source ~/.b
 sqlcmd
 
 pip install pyodbc
+
+docker run -d -p 5000:5000 --name registry registry:2
+apt install pv
