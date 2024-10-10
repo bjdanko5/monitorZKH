@@ -1,6 +1,14 @@
 import streamlit as st
 import pathlib
 import sys
+
+try:
+    import utils.utils as utils
+    import utils.subsystems_db as subsystems_db
+except ImportError as e:
+    print("Pressed Reload in Browser...")
+
+
 from logtail import LogtailHandler
 import logging
 
@@ -20,37 +28,38 @@ sys.path.append(str(parent_dir / 'pages'))
 
 def menu():
 
-    st.sidebar.html("<small style='color: rgba(0, 0, 0, 0.5);'>Версия 0.0.1</small>")
+    st.sidebar.html("<small style='color: #fff; mix-blend-mode: difference;'>Версия 0.0.1</small>")
     #conn = get_conn_status()
     pages = {
     "Монитор ЖКХ": [
         st.Page("pages/Вход.py", title="Вход", icon = ":material/login:" , default=True),   
         st.Page("pages/Выход.py", title="Выход", icon = ":material/logout:")
     ],
-    }
-    user_pages = {
-    "Пользователям": [
+
+   }
+
+    user_pages={
+    "Поиск": [],
+    "Информация выбранного Дома": [],   
+    }     
+
+    user_pages ["Поиск"] = [
         st.Page("pages/Поиск_Дома.py", title="Поиск дома",icon = ":material/search:"),   
-        st.Page("pages/Дом.py", title="Найденнный Дом",icon = ":material/home:"),  
-        #st.Page("pages/Паспорт_МКД.py", title=" "),
-        #st.Page("pages/Жилищный_фонд.py", title=" "),
-        #st.Page("pages/Придомовые_структуры.py", title=" "),
-        #st.Page("pages/Аварийные_объекты.py", title=" ") 
-        st.Page("pages/Паспорт_МКД.py", title="Паспорт МКД", icon=":material/assignment_ind:"),
-        st.Page("pages/Жилищный_фонд.py", title="Жилищный фонд", icon=":material/assignment_ind:"),
-        st.Page("pages/Придомовые_структуры.py", title="Придомовые структуры",icon= ":material/assignment_ind:"),
-        st.Page("pages/Аварийные_объекты.py", title="Аварийные объекты жилищного фонда",icon= ":material/assignment_ind:",) 
+    ]
+
+    subsystems_df = subsystems_db.get_subsystems()
+    for subsystem in subsystems_df.itertuples():
+        user_pages["Информация выбранного Дома"].append(st.Page(subsystem.page, title=subsystem.name, icon=":material/assignment_ind:"))
   
-    ],
-    }
- 
+    
     adm_pages = {
-    "Администраторам": [
-        st.Page("pages/Пользователи.py", title="Пользователи", icon = ":material/group:"),   
-        st.Page("pages/Организации.py", title="Организации", icon = ":material/source_environment:"),   
-        st.Page("pages/Роли.py", title="Роли", icon = ":material/guardian:"),   
-    ],
-    }
+        "Администраторам": [
+            st.Page("pages/Пользователи.py", title="Пользователи", icon = ":material/group:"),   
+            st.Page("pages/Организации.py", title="Организации", icon = ":material/source_environment:"),   
+            st.Page("pages/Роли.py", title="Роли", icon = ":material/guardian:"),   
+            st.Page("pages/Подсистемы.py", title="Подсистемы", icon = ":material/dns:"),   
+        ],
+        }
     adm_pages.update(user_pages)
     role_pages = {
         "adm": adm_pages,
@@ -70,4 +79,6 @@ def menu():
 
     return pg
 st.set_page_config(layout='wide')
+
+conn = utils.get_conn_status()
 menu()
