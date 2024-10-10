@@ -1,21 +1,16 @@
 import streamlit as st
-import pandas as pd
-import pyodbc
+try:
+    import utils.subsystems_db as subsystems_db
+except ImportError as e:
+    print("Pressed Reload in Browser...")
+
 def subsystem_menu():
-    
-    col1, col2, col3, col4 = st.columns(4)
+    subsystems_df = subsystems_db.get_subsystems()
+    cols = st.columns(len(subsystems_df))
 
-    with col1:
-        st.page_link("pages/Паспорт_МКД.py", label="Паспорт МКД", icon=":material/assignment_ind:")
-
-    with col2:
-        st.page_link("pages/Жилищный_фонд.py", label="Жилищный фонд", icon=":material/assignment_ind:")
-
-    with col3:
-        st.page_link("pages/Придомовые_структуры.py", label="Придомовые структуры", icon=":material/assignment_ind:")
-
-    with col4:
-        st.page_link("pages/Аварийные_объекты.py", label="Аварийные объекты жилищного фонда", icon=":material/assignment_ind:")
+    for i, subsystem in enumerate(subsystems_df.itertuples()):
+        with cols[i]:
+            st.page_link(subsystem.page, label=subsystem.name, icon=":material/assignment_ind:")
 def setup_op_status(op_status_container,first_visit_status="Готово"):
     if first_visit_op_status():
         show_op_status(op_status_container,first_visit_status)
