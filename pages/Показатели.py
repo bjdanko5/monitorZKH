@@ -92,17 +92,33 @@ def fill_datums_container():
                 id_subsystem = st.session_state.selected_subsystem_id
             else:
                 id_subsystem = get_id_subsystem_by_subsystem_name(subsystem_name)
+            if "selected_datum_parent_id" in st.session_state:
+                id_parent = st.session_state.selected_datum_parent_id
+            else:
+                id_subsystem = get_id_subsystem_by_subsystem_name(subsystem_name)
+                
             datum_id = int(original_datums_df.iloc[int(row_id)]["id"])
             datums_db.update_datum(datum_id, datum_name,datum_fullname,id_datum_type,id_subsystem)
         # Add new datumanizations
         for row in added_rows:
-            datum_name = row.get("name", "Показатель")
-            datum_fullname = row.get("name", "Полное Имя")
+            name = row.get("name", "Показатель")
+            code = row.get("code", "Код")
+            fullname = row.get("name", "Полное Имя")
             datum_type_name = row.get("datum_type_name", "Показатель")
-            subsystem_name = row.get("subsystem_name", "Подсистема")
+            id_edizm  = row.get("id_edizm", None)
             id_datum_type = get_id_datum_type_by_datum_type_name(datum_type_name)
-            id_subsystem = get_id_subsystem_by_subsystem_name(subsystem_name)
-            datums_db.add_datum( datum_name,datum_fullname, password, id_datum_type,id_subsystem)
+            subsystem_name = row.get("subsystem_name", "Подсистема")
+            if "selected_subsystem_id" in st.session_state:
+              id_subsystem = get_id_subsystem_by_subsystem_name(subsystem_name)
+            else:  
+              id_subsystem = None
+            if "selected_datumparent_id" in st.session_state:  
+                parent_id = st.session_state.selected_datum_parent_id
+            else:
+                parent_id = None    
+
+            #name, code, fullname, id_subsystem, id_datum_type, parent_id,id_edizm
+            datums_db.add_datum( name,code,fullname,id_subsystem,id_datum_type,parent_id,id_edizm)
         # Delete datumanizations
         for row_id in deleted_rows:
             datum_id = int(original_datums_df.iloc[int(row_id)]["id"])
@@ -118,7 +134,7 @@ def fill_datums_container():
             disabled=["id"],
             num_rows="dynamic",
             on_change=datums_df_callback,
-            key="event_datums_df"
+            key="event_datums_df_editor"
             )
 
     return datums_df,column_configuration 
@@ -132,7 +148,7 @@ so_container = st.container()
 so.ВыборПодсистемы(so_container)
 sd_container = st.container()
 sd.ВыборПоказателя(sd_container,None)
-if st.session_state.selected_datum_parent_id == None:
+if not "selected_datum_parent_id" in st.session_state or st.session_state.selected_datum_parent_id == None:
     if "selected_subsystem_id" in st.session_state:
         st.subheader("Редактирование Вкладок " + str(st.session_state.selected_subsystem_id))
     else:    

@@ -12,10 +12,10 @@ def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datu
         FROM mzkh_datums d
         LEFT JOIN mzkh_subsystems s ON d.id_subsystem = s.id
         LEFT JOIN mzkh_datum_types dt ON d.id_datum_type = dt.id
-        WHERE s.name = COALESCE(:subsystem_name, s.name)
-          AND s.id = COALESCE(:subsystem_id, s.id)
-          AND s.code = COALESCE(:subsystem_code, s.code)
-          AND parent_id = COALESCE(:datum_parent_id, parent_id)
+        WHERE (:subsystem_name IS NULL OR s.name = :subsystem_name)
+        AND (:subsystem_id IS NULL OR s.id = :subsystem_id)
+        AND (:subsystem_code IS NULL OR s.code = :subsystem_code)
+        AND (:datum_parent_id IS NULL OR parent_id = :datum_parent_id)
         ORDER BY d.name
     """
     
