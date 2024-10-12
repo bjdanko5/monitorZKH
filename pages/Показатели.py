@@ -41,14 +41,14 @@ def fill_datums_container():
     ),
 
     "datum_type_id": st.column_config.NumberColumn(
-        "ИД Роли",
+        "ИД Типа Показателя",
         help="ИД Роли",
         width="small",
         required = True,
         disabled=True   
     ),   
     "datum_type_name": st.column_config.SelectboxColumn(
-        "Роль 🔽",
+        "Тип Показателя 🔽",
         options=datum_types_df["name"].tolist(),    
         help="Роль",
         width="small",

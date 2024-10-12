@@ -13,7 +13,7 @@ def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datu
         WHERE s.name = COALESCE(:subsystem_name, s.name)
           AND s.id = COALESCE(:subsystem_id, s.id)
           AND s.code = COALESCE(:subsystem_code, s.code)
-          AND datum_parent_id = COALESCE(:datum_parent_id, datum_parent_id)
+          AND parent_id = COALESCE(:datum_parent_id, parent_id)
         ORDER BY d.name
     """
     
@@ -30,7 +30,7 @@ def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datu
     if rows:
         df = pd.DataFrame(rows)
     else:
-        columns = ['id', 'name', 'id_subsystem', 'subsystem_name', 'id_datum_type', 'datum_type_name', "code", "name", "fullname", "parent_id", "page", "id_edizm"]
+        columns = ['id', 'name', 'id_subsystem', 'subsystem_name', 'id_datum_type', 'datum_type_name', "code", "fullname", "parent_id", "page", "id_edizm"]
         df = pd.DataFrame(columns=columns)
     
     return df
