@@ -6,6 +6,7 @@ try:
     import utils.datum_types_db as datum_types_db
     import utils.subsystems_db as subsystems_db
     import widgets.ВыборПодсистемы as so
+    import widgets.ВыборПоказателя as sd
 except ImportError as e:
     print("Pressed Reload in Browser...")
 conn = utils.conn_and_auth_check()
@@ -19,7 +20,7 @@ def fill_datums_container():
     subsystems_df = subsystems_db.get_subsystems()
     if "selected_subsystem_id" in st.session_state:
         subsystem_id = st.session_state.selected_subsystem_id
-        datums_df = datums_db.get_datums(subsystem_id)
+        datums_df = datums_db.get_datums(subsystem_id = subsystem_id)
     else:      
         datums_df = datums_db.get_datums()
     datum_types_df = fill_datum_types_df()
@@ -42,7 +43,7 @@ def fill_datums_container():
 
     "datum_type_id": st.column_config.NumberColumn(
         "ИД Типа Показателя",
-        help="ИД Роли",
+        help="ИД Типа Показателя",
         width="small",
         required = True,
         disabled=True   
@@ -87,14 +88,16 @@ def fill_datums_container():
             datum_type_name = row.get("datum_type_name", original_datums_df.iloc[int(row_id)]["datum_type_name"])
             subsystem_name = row.get("subsystem_name", original_datums_df.iloc[int(row_id)]["subsystem_name"])
             id_datum_type = get_id_datum_type_by_datum_type_name(datum_type_name)
-            id_subsystem = get_id_subsystem_by_subsystem_name(subsystem_name)
+            if "selected_subsystem_id" in st.session_state:
+                id_subsystem = st.session_state.selected_subsystem_id
+            else:
+                id_subsystem = get_id_subsystem_by_subsystem_name(subsystem_name)
             datum_id = int(original_datums_df.iloc[int(row_id)]["id"])
             datums_db.update_datum(datum_id, datum_name,datum_fullname,id_datum_type,id_subsystem)
         # Add new datumanizations
         for row in added_rows:
             datum_name = row.get("name", "Показатель")
             datum_fullname = row.get("name", "Полное Имя")
-            password = row.get("password","Пароль" )
             datum_type_name = row.get("datum_type_name", "Показатель")
             subsystem_name = row.get("subsystem_name", "Подсистема")
             id_datum_type = get_id_datum_type_by_datum_type_name(datum_type_name)
@@ -127,11 +130,20 @@ header_container.header("Показатели")
 
 so_container = st.container()
 so.ВыборПодсистемы(so_container)
+sd_container = st.container()
+sd.ВыборПоказателя(sd_container,None)
+if st.session_state.selected_datum_parent_id == None:
+    if "selected_subsystem_id" in st.session_state:
+        st.subheader("Редактирование Вкладок " + str(st.session_state.selected_subsystem_id))
+    else:    
+        st.subheader("Редактирование Вкладок")
+    
 
 subsystems_df = fill_subsystems_df()
 datum_types_df = fill_datum_types_df()
 datums_df,column_configuration = fill_datums_container()
 original_datums_df = datums_df.copy()
+
 op_status_container = st.empty()
 col1, col2, col3 = st.columns(3)
 with col1: 
