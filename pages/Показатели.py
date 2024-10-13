@@ -2,11 +2,13 @@ import streamlit as st
 import pandas as pd
 try:
     import utils.utils as utils
+    from utils.Stack import Stack
     import utils.datums_db as datums_db
     import utils.datum_types_db as datum_types_db
     import utils.subsystems_db as subsystems_db
     import widgets.ВыборПодсистемы as so
     import widgets.ВыборПоказателя as sd
+   
 except ImportError as e:
     print("Pressed Reload in Browser...")
 conn = utils.conn_and_auth_check()
@@ -20,7 +22,15 @@ def fill_datums_container():
     subsystems_df = subsystems_db.get_subsystems()
     if "selected_subsystem_id" in st.session_state:
         subsystem_id = st.session_state.selected_subsystem_id
-        datums_df = datums_db.get_datums(subsystem_id = subsystem_id)
+        if st.session_state.datumsStack.is_empty():
+            datums_df = datums_db.get_datums(subsystem_id = subsystem_id,datum_parent_id=None)
+        else:    
+            try:
+                datum_parent_id = st.session_state.datumsStack.peek().id
+            except:
+                datum_parent_id = None
+                datums_df = datums_db.get_datums(subsystem_id = subsystem_id,datum_parent_id=datum_parent_id)
+
     else:      
         datums_df = datums_db.get_datums()
     datum_types_df = fill_datum_types_df()
@@ -141,18 +151,26 @@ def fill_datums_container():
 
 #Основная программа страницы
 
-header_container = st.empty()
-header_container.header("Показатели")
-
 so_container = st.container()
+so_container.subheader("Выбор Подсистемы")
 so.ВыборПодсистемы(so_container)
+
 sd_container = st.container()
+sd_container.subheader("Выбор Родительского Показателя")
+if not "datumsStack" in st.session_state:
+    st.session_state.datumsStack = Stack()
 sd.ВыборПоказателя(sd_container,None)
-if not "selected_datum_parent_id" in st.session_state or st.session_state.selected_datum_parent_id == None:
+
+if st.session_state.datumsStack.is_empty():
     if "selected_subsystem_id" in st.session_state:
-        st.subheader("Редактирование Вкладок " + str(st.session_state.selected_subsystem_id))
+        st.subheader("Вкладки Подсистемы " + str(st.session_state.selected_subsystem_name))
     else:    
-        st.subheader("Редактирование Вкладок")
+        st.subheader("Вкладки Подсистемы не выбрана")
+else:
+    if "selected_subsystem_id" in st.session_state:
+        st.subheader("Показатели Подсистемы " + str(st.session_state.selected_subsystem_name)+" в " + str(st.session_state.datumsStack.peek()["datum_name"]))
+    else:    
+        st.subheader("Показатели Подсистема и Родительский Показатель не выбраны")
     
 
 subsystems_df = fill_subsystems_df()
