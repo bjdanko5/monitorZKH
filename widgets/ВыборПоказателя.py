@@ -29,6 +29,7 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
             datumsStack.push(selected_item)
   
     datum_types_df = datum_types_db.get_datum_types()
+   
     datumsStack = st.session_state.datumsStack
     for element in datumsStack:
         with selected_datums_container:
@@ -51,8 +52,16 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
     else:        
         datum_parent_id =datumsStack.peek()["id"]   
     datums_df = datums_db.get_datums(subsystem_id = subsystem_id, datum_parent_id = datum_parent_id)
-    #if datums_df.empty:
-    #    return
+    if datums_df.empty:
+        if datumsStack.is_empty():
+            st.write("Сначала Добавьте Вкладки в Подсистему")
+            return
+        else:
+            datum_parent_id =datumsStack.peek()["id"]       
+            st.write("У выбранного Показателя/Вкладки нет вложенных элементов")        
+            return
+    #else:                
+    #    
 
     column_configuration = {
     "id": st.column_config.NumberColumn(

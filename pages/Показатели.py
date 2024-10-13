@@ -154,8 +154,8 @@ so.ВыборПодсистемы(so_container)
 
 sd_container = st.container()
 sd_container.subheader("Выбор Родительского Показателя")
-#if not "datumsStack" in st.session_state:
-#    st.session_state.datumsStack = Stack()
+if not "datumsStack" in st.session_state:
+    st.session_state.datumsStack = Stack()
 #if st.session_state.datumsStack.is_empty():
 #   active_id= None
 #else:    
