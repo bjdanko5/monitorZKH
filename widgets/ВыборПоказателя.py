@@ -27,37 +27,7 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
             selected_item = fill_stack_item(datums_df,selected_row_id)
             datumsStack = st.session_state.datumsStack
             datumsStack.push(selected_item)
-            """"
-            with selected_datums_container:
-                #if "selected_datum_button"+ str(selected_item["id"]) in st.session_state:
-                selected_datums_button = st.button(
-                    label = str(selected_item["datum_code"]+" "+
-                                selected_item["datum_name"]
-                                )
-                    ,
-                    type  ='primary',
-                    key   = "selected_datum_button" +str(selected_item["id"])
-                )   
-            if selected_datums_button:
-                if  datumsStack.is_empty():
-                    active_id= None
-                else:                  
-                    active_id = datumsStack.peek()["id"]
-                ВыборПоказателя(selected_datums_container,active_id) 
-                st.rerun()
-             
-        else:
-            try:
-                datumsStack = st.session_state.datumsStack
-                datumsStack.pop()
-                if datumsStack.is_empty():
-                    active_id= None
-                else:    
-                    active_id = datumsStack.peek()["id"]
-            except:
-                active_id = None
-            ВыборПоказателя(selected_datums_container,active_id) 
-            """    
+  
     datum_types_df = datum_types_db.get_datum_types()
     datumsStack = st.session_state.datumsStack
     for element in datumsStack:
@@ -71,19 +41,18 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
             )   
         if selected_datums_button:
             datumsStack.pop()
-            #if  datumsStack.is_empty():
-            #    active_id= None
-            #else:                  
-            #    active_id = datumsStack.peek()["id"]
-            #ВыборПоказателя(selected_datums_container,active_id) 
             st.rerun()   
     if "selected_subsystem_id" in st.session_state:
         subsystem_id = st.session_state.selected_subsystem_id
     else:
         subsystem_id = None     
+    if datumsStack.is_empty():
+        datum_parent_id = None
+    else:        
+        datum_parent_id =datumsStack.peek()["id"]   
     datums_df = datums_db.get_datums(subsystem_id = subsystem_id, datum_parent_id = datum_parent_id)
-    if datums_df.empty:
-        return
+    #if datums_df.empty:
+    #    return
 
     column_configuration = {
     "id": st.column_config.NumberColumn(
