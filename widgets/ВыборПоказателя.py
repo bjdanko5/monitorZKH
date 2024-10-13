@@ -18,39 +18,65 @@ def fill_stack_item(df,row_id):
             return item
 def ВыборПоказателя(selected_datums_container,datum_parent_id):
     def on_select_datums_df():
-        if len(st.session_state.event_datums_df.selection.rows) > 0:
-            selected_row_id = st.session_state.event_datums_df.selection.rows[0] 
+        try:
+            active_id = str(st.session_state.datumsStack.peek()["id"])
+        except:
+            active_id = ""
+        if len(st.session_state["event_datums_df"+active_id].selection.rows) > 0:
+            selected_row_id = st.session_state["event_datums_df"+active_id].selection.rows[0] 
             selected_item = fill_stack_item(datums_df,selected_row_id)
             datumsStack = st.session_state.datumsStack
             datumsStack.push(selected_item)
+            """"
             with selected_datums_container:
-                if "selected_datum_button"+ str(selected_item.id) in st.session_state:
-                    st.empty()
-            selected_datums_button = st.button(
-                label = str(selected_item.code+" "+
-                            selected_item.name
-                            )
-                ,
-                type  ='primary',
-                key   = "selected_datum_button" +str(selected_item.id)
-            )   
+                #if "selected_datum_button"+ str(selected_item["id"]) in st.session_state:
+                selected_datums_button = st.button(
+                    label = str(selected_item["datum_code"]+" "+
+                                selected_item["datum_name"]
+                                )
+                    ,
+                    type  ='primary',
+                    key   = "selected_datum_button" +str(selected_item["id"])
+                )   
             if selected_datums_button:
-                try:
-                    active_id = datumsStack.peek().id
-                except:
-                    active_id = None
+                if  datumsStack.is_empty():
+                    active_id= None
+                else:                  
+                    active_id = datumsStack.peek()["id"]
                 ВыборПоказателя(selected_datums_container,active_id) 
                 st.rerun()
              
         else:
             try:
-                datumsStack.pop(selected_item)
-                active_id = datumsStack.peek(selected_item).id
+                datumsStack = st.session_state.datumsStack
+                datumsStack.pop()
+                if datumsStack.is_empty():
+                    active_id= None
+                else:    
+                    active_id = datumsStack.peek()["id"]
             except:
                 active_id = None
             ВыборПоказателя(selected_datums_container,active_id) 
-
+            """    
     datum_types_df = datum_types_db.get_datum_types()
+    datumsStack = st.session_state.datumsStack
+    for element in datumsStack:
+        with selected_datums_container:
+            selected_datums_button = st.button(
+                label = str(element["datum_code"]+" "+
+                            element["datum_name"]
+                            ),
+                type  ='primary',
+                key   = "selected_datum_button" +str(element["id"])
+            )   
+        if selected_datums_button:
+            datumsStack.pop()
+            #if  datumsStack.is_empty():
+            #    active_id= None
+            #else:                  
+            #    active_id = datumsStack.peek()["id"]
+            #ВыборПоказателя(selected_datums_container,active_id) 
+            st.rerun()   
     if "selected_subsystem_id" in st.session_state:
         subsystem_id = st.session_state.selected_subsystem_id
     else:
@@ -99,11 +125,10 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
 
     }
     try:
-        active_id = str(st.session_state.datumsStack.peek().id)
+        active_id = str(st.session_state.datumsStack.peek()["id"])
     except:
         active_id = ""
     with selected_datums_container:    
-        st.empty()
         event_datums_df = st.dataframe(
             datums_df, 
             column_config=column_configuration,

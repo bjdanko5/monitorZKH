@@ -25,11 +25,8 @@ def fill_datums_container():
         if st.session_state.datumsStack.is_empty():
             datums_df = datums_db.get_datums(subsystem_id = subsystem_id,datum_parent_id=None)
         else:    
-            try:
-                datum_parent_id = st.session_state.datumsStack.peek().id
-            except:
-                datum_parent_id = None
-                datums_df = datums_db.get_datums(subsystem_id = subsystem_id,datum_parent_id=datum_parent_id)
+            datum_parent_id = st.session_state.datumsStack.peek()["id"]
+            datums_df = datums_db.get_datums(subsystem_id = subsystem_id,datum_parent_id=datum_parent_id)
 
     else:      
         datums_df = datums_db.get_datums()
@@ -157,8 +154,12 @@ so.ВыборПодсистемы(so_container)
 
 sd_container = st.container()
 sd_container.subheader("Выбор Родительского Показателя")
-if not "datumsStack" in st.session_state:
-    st.session_state.datumsStack = Stack()
+#if not "datumsStack" in st.session_state:
+#    st.session_state.datumsStack = Stack()
+#if st.session_state.datumsStack.is_empty():
+#   active_id= None
+#else:    
+#   active_id = st.session_state.datumsStack.peek()["id"]    
 sd.ВыборПоказателя(sd_container,None)
 
 if st.session_state.datumsStack.is_empty():
