@@ -63,6 +63,7 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
     #else:        
     #    datum_parent_id =datumsStack.peek()["id"]   
     datums_df = datums_db.get_datums_Выбор(subsystem_id = subsystem_id, datum_parent_id = selected_datum_parent_id)
+    
     if datums_df.empty:
         if datumsStack.is_empty():
             st.write("Сначала Добавьте Вкладки в Подсистему")

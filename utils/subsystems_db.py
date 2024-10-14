@@ -5,15 +5,19 @@ def get_subsystems_Выбор(subsystem_id = None,subsystem_code = None):
     df = get_subsystems(subsystem_id = subsystem_id,subsystem_code = subsystem_code)
     df = df[['id','name']]
     return df
-def get_subsystems(subsystem_id = None,subsystem_code = None):
+def get_subsystems(subsystem_id = None,subsystem_code = None,subsystem_name = None):
     conn = st.session_state["conn"]
     engine = st.session_state["engine"]
     if subsystem_id:
         query = text("SELECT * FROM mzkh_subsystems WHERE id = :subsystem_id")
         params = {"subsystem_id": subsystem_id}       
     elif subsystem_code:
-        query = text("SELECT * FROM mzkh_subsystems WHERE id = :subsystem_code")
+        query = text("SELECT * FROM mzkh_subsystems WHERE code = :subsystem_code")
         params = {"subsystem_code": subsystem_code}       
+    elif subsystem_name:
+        query = text("SELECT * FROM mzkh_subsystems WHERE name = :subsystem_name")
+        params = {"subsystem_name": subsystem_name}       
+    
     else:
         query = text("SELECT * FROM mzkh_subsystems ORDER BY id")
         params = {}
@@ -26,10 +30,12 @@ def get_subsystems(subsystem_id = None,subsystem_code = None):
     return df
 
 def get_subsystem_by_id(subsystem_id):
-    return get_subsystems(subsystem_id)
+    return get_subsystems(subsystem_id=subsystem_id)
 
 def get_subsystem_by_code(subsystem_code):
-    return get_subsystems(subsystem_code)
+    return get_subsystems(subsystem_code=subsystem_code)
+def get_subsystem_by_name(subsystem_name):
+    return get_subsystems(subsystem_name=subsystem_name)
 
 def add_subsystem(subsystem_code,subsystem_name,subsystem_page):
     conn = st.session_state["conn"]
