@@ -1,7 +1,10 @@
 import streamlit as st
 import pandas as pd
 from sqlalchemy import text
-  
+def get_subsystems_Выбор(subsystem_id = None,subsystem_code = None):  
+    df = get_subsystems(subsystem_id = subsystem_id,subsystem_code = subsystem_code)
+    df = df[['id','name']]
+    return df
 def get_subsystems(subsystem_id = None,subsystem_code = None):
     conn = st.session_state["conn"]
     engine = st.session_state["engine"]

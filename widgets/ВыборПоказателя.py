@@ -5,6 +5,16 @@ try:
 except ImportError as e:
     print("Pressed Reload in Browser...")
 #conn = utils.conn_and_auth_check()
+def get_selected_datum_parent_id():
+    if not "datumsStack" in st.session_state:
+        return None
+    
+    datumsStack = st.session_state.datumsStack 
+    if datumsStack.is_empty():
+        selected_datum_parent_id = None
+    else:        
+        selected_datum_parent_id =datumsStack.peek()["id"] 
+    return selected_datum_parent_id    
 
 def fill_stack_item(df,row_id):
             item ={
@@ -12,7 +22,7 @@ def fill_stack_item(df,row_id):
             "datum_code" :df.iloc[row_id]["code"],
             "datum_name" :df.iloc[row_id]["name"],
             "fullname"  : df.iloc[row_id]["fullname"],
-            "type_name"  :df.iloc[row_id]["datum_type_name"],
+            #"type_name"  :df.iloc[row_id]["datum_type_name"],
             "id"         :df.iloc[row_id]["id"],
             }    
             return item
@@ -47,11 +57,12 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
         subsystem_id = st.session_state.selected_subsystem_id
     else:
         subsystem_id = None     
-    if datumsStack.is_empty():
-        datum_parent_id = None
-    else:        
-        datum_parent_id =datumsStack.peek()["id"]   
-    datums_df = datums_db.get_datums(subsystem_id = subsystem_id, datum_parent_id = datum_parent_id)
+    selected_datum_parent_id = get_selected_datum_parent_id()    
+    #if datumsStack.is_empty():
+    #    datum_parent_id = None
+    #else:        
+    #    datum_parent_id =datumsStack.peek()["id"]   
+    datums_df = datums_db.get_datums_Выбор(subsystem_id = subsystem_id, datum_parent_id = selected_datum_parent_id)
     if datums_df.empty:
         if datumsStack.is_empty():
             st.write("Сначала Добавьте Вкладки в Подсистему")
@@ -68,19 +79,21 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
         "ИД", help="ИД", width="small",disabled=True
     ),
     "parent_id": st.column_config.NumberColumn(
-        "ИД datum_parent_id", help="ИД", width="small",disabled=True
+        "ИД Родитель", help="ИД", width="small",disabled=True
     ),
     "name": st.column_config.TextColumn(
         "Наименование",
         help="Наименование",
         width="medium",
-        required=True       
+        required=True,
+        disabled=True       
     ),
        "code": st.column_config.TextColumn(
         "Код",
         help="Код",
-        width="small",
-        required=True       
+        width="medium",
+        required=True,
+        disabled=True       
     ),
     "fullname": st.column_config.TextColumn(
         "Полное Наименование",
@@ -88,18 +101,18 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
         width="medium",
         required=True       
     ),
-    "datum_type_name": st.column_config.TextColumn(
-        "Тип Показателя",
-        help="Тип Показателя",
-        width="small",
-        required = True
-    ),
-    "subsystem_name": st.column_config.TextColumn(
-        "Подсистема 🔽",
-        help="Подсистема",
-        width="small",
-        required = True
-    ),
+    #"datum_type_name": st.column_config.TextColumn(
+    #    "Тип Показателя",
+    #    help="Тип Показателя",
+    #    width="small",
+    #    required = True
+    #),
+    #"subsystem_name": st.column_config.TextColumn(
+    #    "Подсистема 🔽",
+    #    help="Подсистема",
+    #    width="small",
+    #    required = True
+    #),
 
     }
     try:

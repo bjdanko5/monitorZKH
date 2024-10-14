@@ -1,11 +1,12 @@
 import streamlit as st
 try:
     import utils.orgs_db as orgs_db
+    from utils.Stack import Stack
 except ImportError as e:
     print("Pressed Reload in Browser...")
 #conn = utils.conn_and_auth_check()
 def ВыборОрганизации(selected_org_container):
-    orgs_df = orgs_db.get_orgs()
+    orgs_df = orgs_db.get_orgs_Выбор()
     column_configuration = {
         "id": st.column_config.NumberColumn(
             "ИД", 
@@ -17,16 +18,16 @@ def ВыборОрганизации(selected_org_container):
             help="Наименование",
             width="medium"       
         ),
-        "id_role": st.column_config.NumberColumn(
-            "ИД Роли", 
-            help="ИД Роли", 
-            width="small"
-        ),
-        "role_name": st.column_config.TextColumn(
-            "Наименование Роли",
-            help="Наименование Роли",
-            width="medium"       
-        ),
+        #"id_role": st.column_config.NumberColumn(
+        #    "ИД Роли", 
+        #    help="ИД Роли", 
+        #    width="small"
+        #),
+        #"role_name": st.column_config.TextColumn(
+        #    "Наименование Роли",
+        #    help="Наименование Роли",
+        #    width="medium"       
+        #),
         
 
     }
@@ -58,6 +59,8 @@ def ВыборОрганизации(selected_org_container):
             key   = "selected_org_button"
         )   
         if selected_org_button:
+            if "datumsStack" in st.session_state:
+                st.session_state.datumsStack = Stack()
             del st.session_state.selected_org_id 
             del st.session_state.selected_org_name 
             st.rerun()

@@ -35,6 +35,5 @@ class Stack:
         if self.is_empty():
             return iter([])
         return iter(self.items)
-
     def __repr__(self):
         return f"Stack({self.items})"

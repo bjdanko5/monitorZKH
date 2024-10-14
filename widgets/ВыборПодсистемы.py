@@ -1,11 +1,12 @@
 import streamlit as st
 try:
     import utils.subsystems_db as subsystems_db
+    from utils.Stack import Stack
 except ImportError as e:
     print("Pressed Reload in Browser...")
 #conn = utils.conn_and_auth_check()
 def ВыборПодсистемы(selected_subsystem_container):
-    subsystems_df = subsystems_db.get_subsystems()
+    subsystems_df = subsystems_db.get_subsystems_Выбор()
     column_configuration = {
         "id": st.column_config.NumberColumn(
             "ИД", 
@@ -31,7 +32,7 @@ def ВыборПодсистемы(selected_subsystem_container):
         event_subsystems_df = st.dataframe(
         subsystems_df, 
         column_config=column_configuration,
-        use_container_width=True,
+        #use_container_width=True,
         hide_index=True,
         on_select=on_select_subsystems_df,
         selection_mode="single-row",
@@ -47,6 +48,8 @@ def ВыборПодсистемы(selected_subsystem_container):
             key   = "selected_subsystem_button"
         )   
         if selected_subsystem_button:
+            if "datumsStack" in st.session_state:
+               st.session_state.datumsStack = Stack()
             del st.session_state.selected_subsystem_id 
             del st.session_state.selected_subsystem_name 
             st.rerun()
