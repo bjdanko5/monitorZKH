@@ -4,7 +4,7 @@ from sqlalchemy import text
 def get_orgs_Выбор(role_name = None):
     df = get_orgs(role_name = role_name)
     df = df[["id","name"]]
-    
+    return df
 def get_orgs(role_name = None):
     conn = st.session_state["conn"]
     if  role_name:

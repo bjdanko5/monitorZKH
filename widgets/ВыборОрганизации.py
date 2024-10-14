@@ -40,14 +40,16 @@ def ВыборОрганизации(selected_org_container):
             st.session_state.selected_org_id = selected_org_id
             st.session_state.selected_org_name = selected_org_name
     if not "selected_org_id" in st.session_state:
-        event_orgs_df = st.dataframe(
-        orgs_df, 
-        column_config=column_configuration,
-        use_container_width=True,
-        hide_index=True,
-        on_select=on_select_orgs_df,
-        selection_mode="single-row",
-        key="event_orgs_df")
+        with selected_org_container:
+            st.subheader("Выбор Организации")
+            event_orgs_df = st.dataframe(
+            orgs_df, 
+            column_config=column_configuration,
+            #use_container_width=True,
+            hide_index=True,
+            on_select=on_select_orgs_df,
+            selection_mode="single-row",
+            key="event_orgs_df")
     else:    
         with selected_org_container:
             if "selected_org_button" in st.session_state:

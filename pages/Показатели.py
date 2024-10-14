@@ -148,13 +148,13 @@ def fill_datums_container():
     return datums_df,column_configuration 
 
 #Основная программа страницы
-
+st.header("Показатели")
 so_container = st.container()
 so_container.subheader("Выбор Подсистемы")
 so.ВыборПодсистемы(so_container)
 
 sd_container = st.container()
-sd_container.subheader("Выбор Родительского Вкладки / Показателя")
+sd_container.subheader("Выбор Вкладки / Показателя для отбора Показателей")
 if not "datumsStack" in st.session_state:
     st.session_state.datumsStack = Stack()
 #if st.session_state.datumsStack.is_empty():

@@ -132,7 +132,7 @@ header_container.header("Пользователи")
 
 so_container = st.container()
 so.ВыборОрганизации(so_container)
-
+st.subheader("Редактирование Пользователей")
 orgs_df = fill_orgs_df()
 roles_df = fill_roles_df()
 users_df,column_configuration = fill_users_container()
