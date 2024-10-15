@@ -19,8 +19,14 @@ class Stack:
         if not self.is_empty():
             return self.items[-1]
         else:
-            raise IndexError("Stack is empty")
-
+            return None
+            #raise IndexError("Stack is empty")
+    def peek_id(self):
+        if not self.is_empty():
+            return self.items[-1].get("id")
+        else:
+            return None
+            #raise IndexError("Stack is empty")
     def get(self, index):
         if index < 0:
             raise IndexError("Index cannot be negative")

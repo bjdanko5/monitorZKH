@@ -20,14 +20,10 @@ def fill_subsystems_df():
     return subsystems_df
 def fill_datums_container():  
     subsystems_df = subsystems_db.get_subsystems()
-    if "selected_subsystem_id" in st.session_state:
-        subsystem_id = st.session_state.selected_subsystem_id
-    else:      
-        subsystem_id = None
-    if st.session_state.datumsStack.is_empty():
-        datum_parent_id = None
-    else:    
-        datum_parent_id = st.session_state.datumsStack.peek()["id"]
+    subsystem_id = st.session_state.get("selected_subsystem_id")
+    datum_parent_id = st.session_state.datumsStack.peek_id()
+        
+    
     datums_df = datums_db.get_datums(subsystem_id = subsystem_id,datum_parent_id=datum_parent_id)
     datum_types_df = fill_datum_types_df()
     column_configuration = {
