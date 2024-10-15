@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 try:
     import utils.utils as utils
-    from utils.Stack import Stack
+    
     import utils.datums_db as datums_db
     import utils.datum_types_db as datum_types_db
     import utils.subsystems_db as subsystems_db
@@ -20,12 +20,14 @@ def fill_subsystems_df():
     return subsystems_df
 def fill_datums_container():  
     subsystems_df = subsystems_db.get_subsystems()
+    datum_types_df = fill_datum_types_df()
+
     subsystem_id = st.session_state.get("selected_subsystem_id")
     datum_parent_id = st.session_state.datumsStack.peek_id()
-        
-    
+
     datums_df = datums_db.get_datums(subsystem_id = subsystem_id,datum_parent_id=datum_parent_id)
-    datum_types_df = fill_datum_types_df()
+    original_datums_df = datums_df.copy()
+    
     column_configuration = {
     "id": st.column_config.NumberColumn(
         "ИД", help="ИД", width="small",disabled=True
@@ -151,19 +153,16 @@ so.ВыборПодсистемы(so_container)
 
 sd_container = st.container()
 sd_container.subheader("Выбор Вкладки / Показателя для отбора Показателей")
-if not "datumsStack" in st.session_state:
-    st.session_state.datumsStack = Stack()
-#if st.session_state.datumsStack.is_empty():
-#   active_id= None
-#else:    
-#   active_id = st.session_state.datumsStack.peek()["id"]    
+
 sd.ВыборПоказателя(sd_container,None)
 
 if st.session_state.datumsStack.is_empty():
+
     if "selected_subsystem_id" in st.session_state:
         st.subheader("Вкладки Подсистемы " + str(st.session_state.selected_subsystem_name))
     else:    
         st.subheader("Вкладки Подсистемы не выбраны")
+        
 else:
     if "selected_subsystem_id" in st.session_state:
         st.subheader("Показатели Подсистемы " + str(st.session_state.selected_subsystem_name)+" в " + str(st.session_state.datumsStack.peek()["datum_name"]))
@@ -171,10 +170,8 @@ else:
         st.subheader("Показатели Подсистема и Родительский Показатель не выбраны")
     
 
-subsystems_df = fill_subsystems_df()
-datum_types_df = fill_datum_types_df()
 datums_df,column_configuration = fill_datums_container()
-original_datums_df = datums_df.copy()
+
 
 op_status_container = st.empty()
 col1, col2, col3 = st.columns(3)
