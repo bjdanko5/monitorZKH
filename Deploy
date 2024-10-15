@@ -8,6 +8,7 @@ cd /var/www/html/monitorZKH
 echo "Сборка образа Docker monitorzkh:latest... $(date)"
 start_time=$(date +%s)
 docker buildx build -t monitorzkh:latest --no-cache -f Dockerfile_monitorzkh .
+#docker buildx build -t monitorzkh:latest --no-cache -f Dockerfile_ubuntu_22.04 .
 end_time=$(date +%s)
 echo "Время сборки: $(($end_time - $start_time)) секунд"
 
@@ -28,6 +29,8 @@ scp monitorzkh.tar user@192.168.10.130:/var/www/html/monitorzkh.tar || {
   echo -e "\033[31mОшибка при копировании файла: $?\033[0m"
   exit 1
 }
+
+#docker system prune -a
 
 # Подключиться к удаленному серверу по SSH, выполнить скрипт UpgradeMonitorZKH в директории /var/www/html/,
 # вывести вывод скрипта на экран и сохранить его в файл upgrade.log на удаленном сервере,
