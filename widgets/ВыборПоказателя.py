@@ -9,6 +9,9 @@ except ImportError as e:
 def get_selected_datum_parent_id():
     selected_datum_parent_id = st.session_state.datumsStack.peek_id()
     return selected_datum_parent_id    
+def get_selected_datum_parent_id_str():
+    selected_datum_parent_id_str = st.session_state.datumsStack.peek_id_str()
+    return selected_datum_parent_id_str    
 
 def fill_stack_item(df,row_id):
             item ={
@@ -21,18 +24,23 @@ def fill_stack_item(df,row_id):
             }    
             return item
 def ВыборПоказателя(selected_datums_container,datum_parent_id):
+    #------------------------------------------------    
     def on_select_datums_df():
-        active_id = st.session_state.datumsStack.peek_id_str()
+        datumsStack = st.session_state.datumsStack
+
+        active_id = datumsStack.peek_id_str()
         if len(st.session_state["event_datums_df"+active_id].selection.rows) > 0:
+            
             selected_row_id = st.session_state["event_datums_df"+active_id].selection.rows[0] 
+
             selected_item = fill_stack_item(datums_df,selected_row_id)
-            datumsStack = st.session_state.datumsStack
             datumsStack.push(selected_item)
+
+    #------------------------------------------------    
   
-  
-    
     if not "datumsStack" in st.session_state:
         st.session_state.datumsStack = Stack()
+
     datumsStack = st.session_state.datumsStack
 
     for element in datumsStack:
@@ -56,7 +64,7 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
             st.write("Сначала Добавьте Вкладки в Подсистему")
             return
         else:
-            datum_parent_id =datumsStack.peek()["id"]       
+            datum_parent_id =datumsStack.peek_id()       
             st.write("У выбранного Показателя/Вкладки нет вложенных элементов")        
             return
     #else:                
@@ -91,8 +99,8 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
     ),
     }
 
-    active_id = st.session_state.datumsStack.peek_id_str()
-
+    
+    selected_datum_parent_id_str = get_selected_datum_parent_id_str()
     with selected_datums_container:    
         event_datums_df = st.dataframe(
             datums_df, 
@@ -101,6 +109,6 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
             hide_index=True,
             on_select=on_select_datums_df,
             selection_mode="single-row",
-            key="event_datums_df"+active_id)
+            key="event_datums_df"+selected_datum_parent_id_str)
 
    
