@@ -14,6 +14,7 @@ def get_selected_datum_parent_id_str():
     return selected_datum_parent_id_str    
 
 def fill_stack_item(df,row_id):
+            """"
             item ={
             "parent_id" : df.iloc[row_id]["parent_id"],
             "datum_code" :df.iloc[row_id]["code"],
@@ -22,7 +23,9 @@ def fill_stack_item(df,row_id):
             "id_subsystem" :df.iloc[row_id]["id_subsystem"],
             #"type_name"  :df.iloc[row_id]["datum_type_name"],
             "id"         :df.iloc[row_id]["id"],
-            }    
+            }   
+            """
+            item = df.iloc[row_id].to_dict()
             return item
 def ВыборПоказателя(selected_datums_container,datum_parent_id):
     #------------------------------------------------    
@@ -48,9 +51,13 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
     for element in datumsStack:
         with selected_datums_container:
             selected_datums_button = st.button(
-                label = str(element["datum_code"]+" "+
-                            element["datum_name"]
+                #label = str(element["datum_code"]+" "+
+                #            element["datum_name"]
+                #            ),
+                label = str(element["code"]+" "+
+                            element["name"]
                             ),
+            
                 type  ='primary',
                 key   = "selected_datum_button" +str(element["id"])
             )   
@@ -76,6 +83,9 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
     ),
     "parent_id": st.column_config.NumberColumn(
         "ИД Родитель", help="ИД", width="small",disabled=True
+    ),       
+    "id_subsystem": st.column_config.NumberColumn(
+        "ИД Подсистемы", help="ИД Подсистемы", width="small",disabled=True
     ),
     "name": st.column_config.TextColumn(
         "Наименование",

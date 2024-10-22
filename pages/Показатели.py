@@ -159,13 +159,13 @@ sd.ВыборПоказателя(sd_container,None)
 if st.session_state.datumsStack.is_empty():
 
     if "selected_subsystem_id" in st.session_state:
-        st.subheader("Вкладки Подсистемы " + str(st.session_state.selected_subsystem_name))
+        st.subheader("Вкладки / Показатели Подсистемы " + str(st.session_state.selected_subsystem_name))
     else:    
         st.subheader("Вкладки Подсистемы не выбраны")
         
 else:
     if "selected_subsystem_id" in st.session_state:
-        st.subheader("Показатели Подсистемы " + str(st.session_state.selected_subsystem_name)+" в " + str(st.session_state.datumsStack.peek()["datum_name"]))
+        st.subheader("Показатели Подсистемы " + str(st.session_state.selected_subsystem_name)+" в " + str(st.session_state.datumsStack.peek()["name"]))
     else:    
         st.subheader("Показатели Подсистема и Родительский Показатель не выбраны")
     
