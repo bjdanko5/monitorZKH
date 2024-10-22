@@ -1,24 +1,18 @@
 import streamlit as st
 try:
     import utils.datums_db as datums_db
-    import utils.datum_types_db as datum_types_db
-    import utils.Stack as Stack
-    #from utils.Stack import Stack
-    #from utils.Stack import DatumsParentStack
 except ImportError as e:
     print("Pressed Reload in Browser...")
 #conn = utils.conn_and_auth_check()
- 
 def ВыборПоказателя(selected_datums_container,datum_parent_id):
     #------------------------------------------------    
     def on_select_datums_df():
         datumsParentStack = st.session_state.datumsParentStack
         event_datums_df_ID = "event_datums_df" + datumsParentStack.peek_id_str()
         selection_rows = st.session_state[event_datums_df_ID].selection.rows
-        if len(selection_rows) > 0:
-            
+        if len(selection_rows) > 0:        
             selected_row_id = selection_rows[0] 
-            selected_item = datums_df.iloc[selected_row_id].to_dict()#fill_stack_item(datums_df,selected_row_id)
+            selected_item = datums_df.iloc[selected_row_id].to_dict()
             datumsParentStack.push(selected_item)
     #------------------------------------------------    
     selected_datums_container.subheader("Выбор Вкладки / Показателя")
@@ -27,21 +21,32 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
     selected_subsystem_id        = datumsParentStack.get_id_subsystem()
     selected_datum_parent_id     = datumsParentStack.peek_id()
     selected_datum_parent_id_str = datumsParentStack.peek_id_str()
+    with selected_datums_container:
+        if not datumsParentStack.is_empty():
+            cols = st.columns(len(datumsParentStack))
 
-    for element in datumsParentStack:
-        with selected_datums_container:
-            selected_datums_button = st.button(
-                label = str(element["code"]+" "+
-                            element["name"]
-                            ),
-                type  ='primary',
-                key   = "selected_datum_button" +str(element["id"])
-            )   
-        if selected_datums_button:
-            datumsParentStack.pop()
-            st.rerun()   
-       
-    
+            for i, element in enumerate(datumsParentStack):
+                with cols[i]:
+                    selected_datums_button = st.button(
+                        label=str(element["code"]+" "+element["name"]),
+                        type='primary',
+                        key="selected_datum_button" + str(element["id"])
+                    )
+                    if selected_datums_button:
+                        datumsParentStack.pop()
+                        st.rerun()
+        """
+        for element in datumsParentStack:
+            with selected_datums_container:
+                selected_datums_button = st.button(
+                    label = str(element["code"]+" "+element["name"]),
+                    type  ='primary',
+                    key   = "selected_datum_button" +str(element["id"])
+                )   
+            if selected_datums_button:
+                datumsParentStack.pop()
+                st.rerun()   
+        """          
     datums_df = datums_db.get_datums_Выбор(subsystem_id = selected_subsystem_id, datum_parent_id = selected_datum_parent_id)
     if not datums_df.empty:
         column_configuration = {
@@ -96,9 +101,7 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
         if st.session_state.datumsParentStack.get_id_subsystem():
             st.subheader("Вкладки / Показатели Подсистемы " + st.session_state.datumsParentStack.get_subsystem_name())
         else:    
-            st.subheader("Все Вкладки / Показатели")
-            #st.subheader("Вкладки / Показатели и Подсистема не выбраны")
-            
+            st.subheader("Все Вкладки / Показатели")           
     else:
         if st.session_state.datumsParentStack.get_id_subsystem():    
             st.subheader("Подсистема " +  st.session_state.datumsParentStack.get_subsystem_name()+" Показатели" +" в " + st.session_state.datumsParentStack.peek()["name"])

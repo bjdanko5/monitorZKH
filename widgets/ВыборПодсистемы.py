@@ -32,13 +32,12 @@ def ВыборПодсистемы(selected_subsystem_container):
             datumsParentStack = st.session_state.datumsParentStack
             datumsParentStack.set_id_subsystem(selected_subsystem_id)
             datumsParentStack.set_subsystem_name(selected_subsystem_name)                        
-            
+
     datumsParentStack = st.session_state.datumsParentStack
     if not datumsParentStack.get_id_subsystem():
         event_subsystems_df = st.dataframe(
         subsystems_df, 
         column_config=column_configuration,
-        #use_container_width=True,
         hide_index=True,
         on_select=on_select_subsystems_df,
         selection_mode="single-row",
@@ -53,6 +52,7 @@ def ВыборПодсистемы(selected_subsystem_container):
             type  ='primary',
             key   = "selected_subsystem_button"
         )   
+        
         if selected_subsystem_button:
             st.session_state.datumsParentStack.set_id_subsystem(None)
             st.rerun()
