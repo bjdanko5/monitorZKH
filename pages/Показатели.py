@@ -147,31 +147,15 @@ def fill_datums_container():
 
 #Основная программа страницы
 st.header("Показатели")
+
 so_container = st.container()
 so_container.subheader("Выбор Подсистемы")
 so.ВыборПодсистемы(so_container)
 
 sd_container = st.container()
-sd_container.subheader("Выбор Вкладки / Показателя для отбора Показателей")
-
 sd.ВыборПоказателя(sd_container,None)
 
-if st.session_state.datumsStack.is_empty():
-
-    if "selected_subsystem_id" in st.session_state:
-        st.subheader("Вкладки / Показатели Подсистемы " + str(st.session_state.selected_subsystem_name))
-    else:    
-        st.subheader("Вкладки Подсистемы не выбраны")
-        
-else:
-    if "selected_subsystem_id" in st.session_state:
-        st.subheader("Показатели Подсистемы " + str(st.session_state.selected_subsystem_name)+" в " + str(st.session_state.datumsStack.peek()["name"]))
-    else:    
-        st.subheader("Показатели Подсистема и Родительский Показатель не выбраны")
-    
-
 datums_df,column_configuration = fill_datums_container()
-
 
 op_status_container = st.empty()
 col1, col2, col3 = st.columns(3)
