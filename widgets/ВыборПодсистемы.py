@@ -22,18 +22,17 @@ def ВыборПодсистемы(selected_subsystem_container):
    
     }
     def on_select_subsystems_df():
-        if len(st.session_state.event_subsystems_df.selection.rows) > 0:
-            selected_row_id = st.session_state.event_subsystems_df.selection.rows[0]
+        selection_rows = st.session_state.event_subsystems_df.selection.rows
+        if len(selection_rows) > 0:
+            selected_row_id = selection_rows[0]
             
             selected_subsystem_id   = subsystems_df.iloc[selected_row_id]["id"]   
             selected_subsystem_name = subsystems_df.iloc[selected_row_id]["name"]
 
             datumsParentStack = st.session_state.datumsParentStack
             datumsParentStack.set_id_subsystem(selected_subsystem_id)
-
-            #st.session_state.selected_subsystem_id = selected_subsystem_id
-            st.session_state.selected_subsystem_name = selected_subsystem_name
-   # if not "selected_subsystem_id" in st.session_state:
+            datumsParentStack.set_subsystem_name(selected_subsystem_name)                        
+            
     datumsParentStack = st.session_state.datumsParentStack
     if not datumsParentStack.get_id_subsystem():
         event_subsystems_df = st.dataframe(
@@ -50,13 +49,10 @@ def ВыборПодсистемы(selected_subsystem_container):
                 st.empty()
     
         selected_subsystem_button = st.button(
-            label = st.session_state.selected_subsystem_name,
+            label = st.session_state.datumsParentStack.get_subsystem_name(),
             type  ='primary',
             key   = "selected_subsystem_button"
         )   
         if selected_subsystem_button:
-            datumsParentStack = st.session_state.datumsParentStack
-            datumsParentStack.set_id_subsystem(None)
-            #del st.session_state.selected_subsystem_id 
-            del st.session_state.selected_subsystem_name 
+            st.session_state.datumsParentStack.set_id_subsystem(None)
             st.rerun()

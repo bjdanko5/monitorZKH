@@ -26,10 +26,7 @@ class Stack:
             return str(self.items[-1].get("id"))
         else:
             return ""
-            #raise IndexError("Stack is empty")        
-    #def clear_not_in_subsystem(self, id_subsystem):     
-    #    if id_subsystem:
-    #        self.items = [item for item in self.items if item.get("id_subsystem") == id_subsystem]        
+            #raise IndexError("Stack is empty")            
     def get(self, index):
         if index < 0:
             raise IndexError("Index cannot be negative")
@@ -48,16 +45,22 @@ class Stack:
         return f"Stack({self.items})"
     
 class DatumsParentStack(Stack):
-    def __init__(self, id_subsystem=None):
+    def __init__(self, id_subsystem = None, subsystem_name = None):
         super().__init__()
         self.id_subsystem = id_subsystem
+        self.subsystem    = subsystem_name
     def clear_not_in_subsystem(self):           
         if self.id_subsystem:
             self.items = [item for item in self.items if item.get("id_subsystem") == self.id_subsystem]        
-    def set_id_subsystem(self,id_subsystem):           
+    def set_id_subsystem(self,id_subsystem):
          self.id_subsystem = id_subsystem
+         if not id_subsystem:           
+            self.subsystem_name = ""
          self.clear_not_in_subsystem()
     def get_id_subsystem(self):           
-         return self.id_subsystem
-         
+         return self.id_subsystem        
+    def set_subsystem_name(self,subsystem_name):           
+         self.subsystem_name = subsystem_name
+    def get_subsystem_name(self):           
+         return self.subsystem_name
  

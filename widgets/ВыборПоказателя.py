@@ -21,15 +21,10 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
             selected_item = datums_df.iloc[selected_row_id].to_dict()#fill_stack_item(datums_df,selected_row_id)
             datumsParentStack.push(selected_item)
     #------------------------------------------------    
-    selected_datums_container.subheader("Выбор Вкладки / Показателя для отбора Показателей")
+    selected_datums_container.subheader("Выбор Вкладки / Показателя")
 
-   # selected_subsystem_id = st.session_state.get("selected_subsystem_id") 
-   # if not st.session_state.get("datumsParentStack"):
-   #     st.session_state.datumsParentStack = Stack.DatumsParentStack()
-    datumsParentStack = st.session_state.datumsParentStack
-   # datumsParentStack.set_id_subsystem(selected_subsystem_id)
-    selected_subsystem_id = datumsParentStack.get_id_subsystem()
-    
+    datumsParentStack            = st.session_state.datumsParentStack
+    selected_subsystem_id        = datumsParentStack.get_id_subsystem()
     selected_datum_parent_id     = datumsParentStack.peek_id()
     selected_datum_parent_id_str = datumsParentStack.peek_id_str()
 
@@ -98,16 +93,16 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
             st.write("У выбранного Показателя/Вкладки нет вложенных элементов")        
         
     if st.session_state.datumsParentStack.is_empty():
-
-        if "selected_subsystem_id" in st.session_state:
-            st.subheader("Вкладки / Показатели Подсистемы " + str(st.session_state.selected_subsystem_name))
+        if st.session_state.datumsParentStack.get_id_subsystem():
+            st.subheader("Вкладки / Показатели Подсистемы " + st.session_state.datumsParentStack.get_subsystem_name())
         else:    
-            st.subheader("Вкладки Подсистемы не выбраны")
+            st.subheader("Все Вкладки / Показатели")
+            #st.subheader("Вкладки / Показатели и Подсистема не выбраны")
             
     else:
-        if "selected_subsystem_id" in st.session_state:
-            st.subheader("Подсистема " + str(st.session_state.selected_subsystem_name)+"Показатели" +" в " + str(st.session_state.datumsParentStack.peek()["name"]))
+        if st.session_state.datumsParentStack.get_id_subsystem():    
+            st.subheader("Подсистема " +  st.session_state.datumsParentStack.get_subsystem_name()+" Показатели" +" в " + st.session_state.datumsParentStack.peek()["name"])
         else:    
-            st.subheader("Подсистема не выбрана Показатели " +" в " + str(st.session_state.datumsParentStack.peek()["name"]))
+            st.subheader("Подсистема не выбрана Показатели " +" в " + st.session_state.datumsParentStack.peek()["name"])
             
         
