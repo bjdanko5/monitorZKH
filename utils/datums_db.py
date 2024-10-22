@@ -10,7 +10,7 @@ def get_datums_Вкладки(subsystem_name=None, subsystem_id=None, subsystem_
     return df
 def get_datums_Выбор(subsystem_name=None, subsystem_id=None, subsystem_code=None, datum_parent_id=None):
     df = get_datums(subsystem_name=subsystem_name, subsystem_id=subsystem_id, subsystem_code=subsystem_code, datum_parent_id=datum_parent_id)
-    df = df[['id',"code","name","fullname","parent_id"]]
+    df = df[['id',"code","name","fullname","parent_id","id_subsystem"]]
     return df
 def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datum_parent_id=None):
     conn = st.session_state["conn"]

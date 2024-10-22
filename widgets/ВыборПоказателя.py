@@ -19,6 +19,7 @@ def fill_stack_item(df,row_id):
             "datum_code" :df.iloc[row_id]["code"],
             "datum_name" :df.iloc[row_id]["name"],
             "fullname"  : df.iloc[row_id]["fullname"],
+            "id_subsystem" :df.iloc[row_id]["id_subsystem"],
             #"type_name"  :df.iloc[row_id]["datum_type_name"],
             "id"         :df.iloc[row_id]["id"],
             }    
@@ -27,22 +28,23 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
     #------------------------------------------------    
     def on_select_datums_df():
         datumsStack = st.session_state.datumsStack
+        selected_datum_parent_id_str = datumsStack.peek_id_str()
 
-        active_id = datumsStack.peek_id_str()
-        if len(st.session_state["event_datums_df"+active_id].selection.rows) > 0:
+        if len(st.session_state["event_datums_df"+selected_datum_parent_id_str].selection.rows) > 0:
             
-            selected_row_id = st.session_state["event_datums_df"+active_id].selection.rows[0] 
+            selected_row_id = st.session_state["event_datums_df"+selected_datum_parent_id_str].selection.rows[0] 
 
             selected_item = fill_stack_item(datums_df,selected_row_id)
             datumsStack.push(selected_item)
-
+            st.session_state.datumsStack.items = datumsStack.items 
     #------------------------------------------------    
   
     if not "datumsStack" in st.session_state:
         st.session_state.datumsStack = Stack()
 
     datumsStack = st.session_state.datumsStack
-
+    selected_subsystem_id = st.session_state.get("selected_subsystem_id") 
+    datumsStack.clear_not_in_subsystem(selected_subsystem_id)
     for element in datumsStack:
         with selected_datums_container:
             selected_datums_button = st.button(
@@ -54,22 +56,20 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
             )   
         if selected_datums_button:
             datumsStack.pop()
+            st.session_state.datumsStack = datumsStack 
             st.rerun()   
-    subsystem_id = st.session_state.get("selected_subsystem_id")        
+
+           
     selected_datum_parent_id = get_selected_datum_parent_id()    
-    datums_df = datums_db.get_datums_Выбор(subsystem_id = subsystem_id, datum_parent_id = selected_datum_parent_id)
+    datums_df = datums_db.get_datums_Выбор(subsystem_id = selected_subsystem_id, datum_parent_id = selected_datum_parent_id)
     
     if datums_df.empty:
         if datumsStack.is_empty():
             st.write("Сначала Добавьте Вкладки в Подсистему")
-            return
         else:
-            datum_parent_id =datumsStack.peek_id()       
             st.write("У выбранного Показателя/Вкладки нет вложенных элементов")        
-            return
-    #else:                
-    #    
-
+        return
+  
     column_configuration = {
     "id": st.column_config.NumberColumn(
         "ИД", help="ИД", width="small",disabled=True
@@ -98,8 +98,7 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
         required=True       
     ),
     }
-
-    
+   
     selected_datum_parent_id_str = get_selected_datum_parent_id_str()
     with selected_datums_container:    
         event_datums_df = st.dataframe(

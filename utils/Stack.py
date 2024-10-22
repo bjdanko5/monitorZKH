@@ -33,6 +33,8 @@ class Stack:
         else:
             return ""
             #raise IndexError("Stack is empty")        
+    def clear_not_in_subsystem(self, id_subsystem):
+        self.items = [item for item in self.items if item.get("id_subsystem") == id_subsystem]        
     def get(self, index):
         if index < 0:
             raise IndexError("Index cannot be negative")
