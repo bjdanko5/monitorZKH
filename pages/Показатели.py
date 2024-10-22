@@ -8,23 +8,18 @@ try:
     import utils.subsystems_db as subsystems_db
     import widgets.ВыборПодсистемы as so
     import widgets.ВыборПоказателя as sd
-   
+    import utils.Stack as Stack
 except ImportError as e:
     print("Pressed Reload in Browser...")
 conn = utils.conn_and_auth_check()
-def fill_datum_types_df():
-    datum_types_df = datum_types_db.get_datum_types()
-    return datum_types_df
-def fill_subsystems_df():
-    subsystems_df = subsystems_db.get_subsystems()
-    return subsystems_df
 def fill_datums_container():  
-    subsystems_df = subsystems_db.get_subsystems()
-    datum_types_df = fill_datum_types_df()
+    subsystems_df  = subsystems_db.get_subsystems()
+    datum_types_df = datum_types_db.get_datum_types()
 
-    subsystem_id = st.session_state.get("selected_subsystem_id")
-    datum_parent_id = st.session_state.datumsStack.peek_id()
-
+    #subsystem_id = st.session_state.get("selected_subsystem_id") 
+    subsystem_id = st.session_state.datumsParentStack.get_id_subsystem()
+    datum_parent_id = st.session_state.datumsParentStack.peek_id()
+    
     datums_df = datums_db.get_datums(subsystem_id = subsystem_id,datum_parent_id=datum_parent_id)
     original_datums_df = datums_df.copy()
     
@@ -95,13 +90,16 @@ def fill_datums_container():
             datum_parent_id = row.get("parent_id", original_datums_df.iloc[int(row_id)]["parent_id"])
             datum_id_edizm = row.get("id_edizm", original_datums_df.iloc[int(row_id)]["id_edizm"])
             id_datum_type = get_id_datum_type_by_datum_type_name(datum_type_name)
+
+            id_subsystem = st.session_state.datumsParentStack.get_id_subsystem()       
+
+            #if "selected_subsystem_id" in st.session_state:
+            #    id_subsystem = st.session_state.selected_subsystem_id
+            #else:
+            #    id_subsystem = get_id_subsystem_by_subsystem_name(subsystem_name)
             
-            if "selected_subsystem_id" in st.session_state:
-                id_subsystem = st.session_state.selected_subsystem_id
-            else:
-                id_subsystem = get_id_subsystem_by_subsystem_name(subsystem_name)
-            
-            selected_datum_parent_id = sd.get_selected_datum_parent_id()        
+            #selected_datum_parent_id = sd.get_selected_datum_parent_id() 
+            selected_datum_parent_id = st.session_state.datumsParentStack.peek_id()
 
             datum_id = int(original_datums_df.iloc[int(row_id)]["id"])
             
@@ -116,14 +114,9 @@ def fill_datums_container():
             id_edizm  = row.get("id_edizm", None)
             id_datum_type = get_id_datum_type_by_datum_type_name(datum_type_name)
             subsystem_name = row.get("subsystem_name", "Подсистема")
-            if "selected_subsystem_id" in st.session_state:
-              id_subsystem = get_id_subsystem_by_subsystem_name(subsystem_name)
-            else:  
-              id_subsystem = None
-              utils.queue_op_status("Обязательно Выберите Подсистему",status_type="error")
-              return
-
-            selected_datum_parent_id = sd.get_selected_datum_parent_id()
+            id_subsystem = st.session_state.datumsParentStack.get_id_subsystem()
+            #selected_datum_parent_id = sd.get_selected_datum_parent_id()
+            selected_datum_parent_id = st.session_state.datumsParentStack.peek_id()
             datums_db.add_datum( name,code,fullname,id_subsystem,id_datum_type,selected_datum_parent_id,id_edizm)
         # Delete datumanizations
         for row_id in deleted_rows:
@@ -148,8 +141,11 @@ def fill_datums_container():
 #Основная программа страницы
 st.header("Показатели")
 
+if not st.session_state.get("datumsParentStack"):
+    st.session_state.datumsParentStack = Stack.DatumsParentStack()
+
 so_container = st.container()
-so_container.subheader("Выбор Подсистемы")
+
 so.ВыборПодсистемы(so_container)
 
 sd_container = st.container()

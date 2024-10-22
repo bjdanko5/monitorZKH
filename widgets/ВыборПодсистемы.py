@@ -6,6 +6,7 @@ except ImportError as e:
     print("Pressed Reload in Browser...")
 #conn = utils.conn_and_auth_check()
 def ВыборПодсистемы(selected_subsystem_container):
+    selected_subsystem_container.subheader("Выбор Подсистемы")
     subsystems_df = subsystems_db.get_subsystems_Выбор()
     column_configuration = {
         "id": st.column_config.NumberColumn(
@@ -26,9 +27,15 @@ def ВыборПодсистемы(selected_subsystem_container):
             
             selected_subsystem_id   = subsystems_df.iloc[selected_row_id]["id"]   
             selected_subsystem_name = subsystems_df.iloc[selected_row_id]["name"]
-            st.session_state.selected_subsystem_id = selected_subsystem_id
+
+            datumsParentStack = st.session_state.datumsParentStack
+            datumsParentStack.set_id_subsystem(selected_subsystem_id)
+
+            #st.session_state.selected_subsystem_id = selected_subsystem_id
             st.session_state.selected_subsystem_name = selected_subsystem_name
-    if not "selected_subsystem_id" in st.session_state:
+   # if not "selected_subsystem_id" in st.session_state:
+    datumsParentStack = st.session_state.datumsParentStack
+    if not datumsParentStack.get_id_subsystem():
         event_subsystems_df = st.dataframe(
         subsystems_df, 
         column_config=column_configuration,
@@ -48,8 +55,8 @@ def ВыборПодсистемы(selected_subsystem_container):
             key   = "selected_subsystem_button"
         )   
         if selected_subsystem_button:
-            if "datumsStack" in st.session_state:
-               st.session_state.datumsStack = Stack()
-            del st.session_state.selected_subsystem_id 
+            datumsParentStack = st.session_state.datumsParentStack
+            datumsParentStack.set_id_subsystem(None)
+            #del st.session_state.selected_subsystem_id 
             del st.session_state.selected_subsystem_name 
             st.rerun()
