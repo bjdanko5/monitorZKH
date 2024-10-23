@@ -11,7 +11,7 @@ except ImportError as e:
 
 from logtail import LogtailHandler
 import logging
-Версия ="0.0.3"
+Версия ="0.0.4"
 handler = LogtailHandler(source_token="HuXAzztxnhkthASvbRxaZv2a")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

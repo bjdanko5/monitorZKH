@@ -2,15 +2,19 @@ import streamlit as st
 import pandas as pd
 from sqlalchemy import text
   
-def get_datum_types(datum_type_id = None,datum_type_code = None):
+def get_datum_types(datum_type_id = None,datum_type_code = None,datum_parent_id = None):
     conn = st.session_state["conn"]
     engine = st.session_state["engine"]
+    datum_type_code = "tab" if datum_parent_id is None else  datum_type_code
     if datum_type_id:
         query = text("SELECT * FROM mzkh_datum_types WHERE id = :datum_type_id")
         params = {"datum_type_id": datum_type_id}       
-    elif datum_type_code:
-        query = text("SELECT * FROM mzkh_datum_types WHERE id = :datum_type_code")
+    elif datum_type_code == "tab":
+        query = text("SELECT * FROM mzkh_datum_types WHERE code = :datum_type_code")
         params = {"datum_type_code": datum_type_code}       
+    elif datum_type_code is None and  datum_parent_id is not None and datum_parent_id!=0:
+        query = text("SELECT * FROM mzkh_datum_types WHERE code<>'tab'")
+        params = {}
     else:
         query = text("SELECT * FROM mzkh_datum_types ORDER BY id")
         params = {}

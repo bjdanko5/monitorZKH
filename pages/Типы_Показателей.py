@@ -6,7 +6,7 @@ except ImportError as e:
     print("Pressed Reload in Browser...")
 conn = utils.conn_and_auth_check()
 def fill_datum_types_container():
-    datum_types_df = datum_types_db.get_datum_types()
+    datum_types_df = datum_types_db.get_datum_types(datum_parent_id = 0)
     column_configuration = {
         "id": st.column_config.NumberColumn(
             "ИД", help="ИД", width="small",disabled=True

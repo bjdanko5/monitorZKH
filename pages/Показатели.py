@@ -40,7 +40,7 @@ def fill_datums_container(datums_container):
                 if parent_id is None:
                     datum_type_name ="Вкладка"
                 else:    
-                    datum_type_name = row.get("datum_type_name", "Показатель")
+                    datum_type_name = row.get("datum_type_name", "Тип Показателя")
 
                 id_datum_type = get_id_datum_type_by_datum_type_name(datum_type_name)
                 
@@ -73,7 +73,7 @@ def fill_datums_container(datums_container):
     datum_parent_id = st.session_state.datumsParentStack.peek_id()
     
     subsystems_df  = subsystems_db.get_subsystems()
-    datum_types_df = datum_types_db.get_datum_types(datum_parent_id)
+    datum_types_df = datum_types_db.get_datum_types(datum_parent_id = datum_parent_id)
         
     datums_df = datums_db.get_datums(subsystem_id = subsystem_id,datum_parent_id=datum_parent_id)
 
