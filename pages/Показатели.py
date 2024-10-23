@@ -37,8 +37,11 @@ def fill_datums_container(datums_container):
             id_subsystem = st.session_state.datumsParentStack.get_id_subsystem()
             parent_id = st.session_state.datumsParentStack.peek_id()
             for row in added_rows:
+                if parent_id is None:
+                    datum_type_name ="Вкладка"
+                else:    
+                    datum_type_name = row.get("datum_type_name", "Показатель")
 
-                datum_type_name = row.get("datum_type_name", "Показатель")
                 id_datum_type = get_id_datum_type_by_datum_type_name(datum_type_name)
                 
                 row["id_subsystem"]  = id_subsystem
@@ -70,7 +73,7 @@ def fill_datums_container(datums_container):
     datum_parent_id = st.session_state.datumsParentStack.peek_id()
     
     subsystems_df  = subsystems_db.get_subsystems()
-    datum_types_df = datum_types_db.get_datum_types()
+    datum_types_df = datum_types_db.get_datum_types(datum_parent_id)
         
     datums_df = datums_db.get_datums(subsystem_id = subsystem_id,datum_parent_id=datum_parent_id)
 
@@ -112,14 +115,6 @@ def fill_datums_container(datums_container):
         width="medium",
         required = True
     ),
-    #"subsystem_name": st.column_config.SelectboxColumn(
-    #    "Подсистема 🔽",
-    #    options=subsystems_df["name"].tolist(),    
-    #    help="Подсистема",
-    #    width="medium",
-    #    required = True,
-    #    disabled=True
-    #),
     "page":None,
     "subsystem_name": None,
     "id_datum_type": None,
