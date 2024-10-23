@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from sqlalchemy import text
+import numpy as np
 def prepare_int(i):
     return i if i is None else int(i)
 def get_datums_Вкладки(subsystem_name=None, subsystem_id=None, subsystem_code=None, datum_parent_id=None):
@@ -23,10 +24,10 @@ def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datu
         WHERE (:subsystem_name IS NULL OR s.name = :subsystem_name)
         AND (:subsystem_id IS NULL OR s.id = :subsystem_id)
         AND (:subsystem_code IS NULL OR s.code = :subsystem_code)
-        AND (:datum_parent_id IS NULL OR parent_id = :datum_parent_id)
+        AND (:datum_parent_id IS NULL AND parent_id IS NULL OR parent_id = :datum_parent_id)
         ORDER BY d.name
     """
-    
+    #AND (:datum_parent_id IS NULL OR parent_id = :datum_parent_id)
     params = {
         "subsystem_name": subsystem_name,
         "subsystem_id": prepare_int(subsystem_id),
@@ -44,6 +45,50 @@ def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datu
         df = pd.DataFrame(columns=columns)
     
     return df
+def add_datum_dict(params):
+    
+    params.pop("subsystem_name", None)
+    params.pop("datum_type_name", None)
+    
+    params = {
+    key: int(value) if isinstance(value, np.int64) 
+    else "Не задано" if value in [None, ""] and isinstance(value, str) 
+    else value 
+    for key, value in params.items()
+    }
+    params["page"] = "pages/" + params["code"] + ".py"
+
+    conn = st.session_state["conn"]
+    query = """
+        INSERT INTO mzkh_datums (name, code, fullname, id_subsystem, id_datum_type, parent_id, page, id_edizm)
+        VALUES (:name, :code, :fullname, :id_subsystem, :id_datum_type, :parent_id, :page, :id_edizm)
+    """
+    conn.execute(text(query), params)
+    conn.commit()
+
+def update_datum_dict(params,original_row):    
+ 
+    params.update({key: value for key, value in original_row.items() if key not in params})
+    params.pop("subsystem_name", None)
+    params.pop("datum_type_name", None)
+ 
+    params = {
+    key: int(value) if isinstance(value, np.int64) 
+    else "Не задано" if value in [None, ""] and isinstance(value, str) 
+    else value 
+    for key, value in params.items()
+    }
+    params["page"] = "pages/" + params["code"] + ".py"
+
+    conn = st.session_state["conn"]
+    query = """
+        UPDATE mzkh_datums
+        SET name = :name, code = :code, fullname = :fullname, id_subsystem = :id_subsystem,
+            id_datum_type = :id_datum_type, parent_id = :parent_id, page = :page, id_edizm = :id_edizm
+        WHERE id = :id
+    """
+    conn.execute(text(query), params)
+    conn.commit()
 def add_datum(name, code, fullname, id_subsystem, id_datum_type, parent_id,id_edizm):
     page = "pages/" + code + ".py"
     conn = st.session_state["conn"]
