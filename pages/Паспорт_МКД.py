@@ -22,16 +22,16 @@ with Вкладки_container:
     stx.TabBarItemData(id=int(row['id']), title=row['name'], description=row['fullname'])
     for index, row in df_Вкладки.iterrows()
     ]
-    st.session_state.id_Вкладка = stx.tab_bar(data=data, default=int(df_Вкладки["id"][0]))
+    st.session_state.id_Вкладка =int(stx.tab_bar(data=data, default=int(df_Вкладки["id"][0])))
 
     st.info(f"{st.session_state.id_Вкладка=}")
     if st.session_state.id_Вкладка==1: 
         datums_df = datums_db.get_datums(subsystem_id = st.session_state.selected_subsystem_id,
-                                     datum_lvl=1,datum_id_lvl=st.session_state.id_Вкладка)
+                                     datum_lvl=0,datum_id_lvl=st.session_state.id_Вкладка,mode='all')
         datums_df 
     if st.session_state.id_Вкладка==5: 
         datums_df = datums_db.get_datums(subsystem_id = st.session_state.selected_subsystem_id,
-                                     datum_lvl=1,datum_id_lvl=st.session_state.id_Вкладка) 
+                                     datum_lvl=0,datum_id_lvl=st.session_state.id_Вкладка,mode='all') 
         datums_df
     #tabs = st.tabs(df_Вкладки['name'].tolist())
 
