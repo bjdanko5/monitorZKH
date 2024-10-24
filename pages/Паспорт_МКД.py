@@ -24,18 +24,14 @@ with Вкладки_container:
     ]
     st.session_state.id_Вкладка =int(stx.tab_bar(data=data, default=int(df_Вкладки["id"][0])))
 
-    st.info(f"{st.session_state.id_Вкладка=}")
-    if st.session_state.id_Вкладка==1: 
-        datums_df = datums_db.get_datums(subsystem_id = st.session_state.selected_subsystem_id,
+    #st.info(f"{st.session_state.id_Вкладка=}")
+    datums_df = datums_db.get_datums(subsystem_id = st.session_state.selected_subsystem_id,
                                      datum_lvl=0,datum_id_lvl=st.session_state.id_Вкладка,mode='all')
-        datums_df 
-    if st.session_state.id_Вкладка==5: 
-        datums_df = datums_db.get_datums(subsystem_id = st.session_state.selected_subsystem_id,
-                                     datum_lvl=0,datum_id_lvl=st.session_state.id_Вкладка,mode='all') 
-        datums_df
-    #tabs = st.tabs(df_Вкладки['name'].tolist())
+    if not datums_df.empty:
+            datums_df 
+    columns_to_print = ['id', 'name', 'code']
+    for index, row in datums_df.iterrows():
+        #for column in columns_to_print:
 
-    # Iterate over the tabs and display the content for each tab
-    #for tab, row in zip(tabs, df_Вкладки.itertuples()):
-    #    with tab:
-    #        st.subheader(row.fullname)
+        st.markdown(f"{row['lvl']} {row['code']} {row['name']}")
+            
