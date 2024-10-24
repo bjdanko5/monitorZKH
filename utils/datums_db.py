@@ -13,9 +13,8 @@ def get_datums_Выбор(subsystem_name=None, subsystem_id=None, subsystem_code
     df = get_datums(subsystem_name=subsystem_name, subsystem_id=subsystem_id, subsystem_code=subsystem_code, datum_parent_id=datum_parent_id)
     df = df[['id',"code","name","fullname","parent_id","id_subsystem"]]
     return df
-def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datum_parent_id=None):
-    conn = st.session_state["conn"]
-    
+def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datum_parent_id=None,datum_lvl=None,datum_id_lvl=None):
+    conn = st.session_state["conn"]    
     query = """
         SELECT d.*, s.name AS subsystem_name, dt.name AS datum_type_name
         FROM mzkh_datums d
@@ -25,16 +24,32 @@ def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datu
         AND (:subsystem_id IS NULL OR s.id = :subsystem_id)
         AND (:subsystem_code IS NULL OR s.code = :subsystem_code)
         AND (:datum_parent_id IS NULL AND parent_id IS NULL OR parent_id = :datum_parent_id)
-        ORDER BY  CAST(REPLACE(d.code, '.', '') AS INT)
+        AND (:id_lvl0 IS NULL OR id_lvl0 = :id_lvl0)
+        AND (:id_lvl1 IS NULL OR id_lvl1 = :id_lvl1)
+        AND (:id_lvl2 IS NULL OR id_lvl2 = :id_lvl2)
+        AND (:id_lvl3 IS NULL OR id_lvl3 = :id_lvl3)
+        AND (:lvl IS NULL OR lvl = :lvl)
+        ORDER BY CASE
+        WHEN TRY_CONVERT(INT, REPLACE(d.code, '.', '')) IS NOT NULL
+        THEN TRY_CONVERT(INT, REPLACE(d.code, '.', ''))
+        ELSE 9999999
+        END,d.code
     """
     #AND (:datum_parent_id IS NULL OR parent_id = :datum_parent_id)
     params = {
         "subsystem_name": subsystem_name,
         "subsystem_id": prepare_int(subsystem_id),
         "subsystem_code": subsystem_code,
-        "datum_parent_id": prepare_int(datum_parent_id)
+        "datum_parent_id": prepare_int(datum_parent_id),    
+        "lvl": datum_lvl
     }
     
+    for lvl in range(4):
+        if datum_lvl == lvl:
+            params[f"id_lvl{lvl}"] = datum_id_lvl
+        else:    
+            params[f"id_lvl{lvl}"] = None
+
     result = conn.execute(text(query), params)
     rows = result.fetchall()
     
