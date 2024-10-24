@@ -25,7 +25,7 @@ def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datu
         AND (:subsystem_id IS NULL OR s.id = :subsystem_id)
         AND (:subsystem_code IS NULL OR s.code = :subsystem_code)
         AND (:datum_parent_id IS NULL AND parent_id IS NULL OR parent_id = :datum_parent_id)
-        ORDER BY d.name
+        ORDER BY  CAST(REPLACE(d.code, '.', '') AS INT)
     """
     #AND (:datum_parent_id IS NULL OR parent_id = :datum_parent_id)
     params = {
@@ -41,10 +41,24 @@ def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datu
     if rows:
         df = pd.DataFrame(rows)
     else:
-        columns = ['id', 'name', 'id_subsystem', 'subsystem_name', 'id_datum_type', 'datum_type_name', "code", "fullname", "parent_id", "page", "id_edizm"]
+        columns = ['id', 'name', 'id_subsystem', 'subsystem_name', 'id_datum_type', 'datum_type_name', "code", "fullname", "parent_id", "page", "id_edizm","lvl","id_lvl0","id_lvl1","id_lvl2","id_lvl3"]
         df = pd.DataFrame(columns=columns)
     
     return df
+def update_datum_level(conn,params,new_record_id):
+    params["lvl"], params["id_lvl0"], params["id_lvl1"], params["id_lvl2"], params["id_lvl3"] = st.session_state.datumsParentStack.get_lvl(new_record_id)
+    update_query = """
+                   UPDATE mzkh_datums
+                   SET
+                       lvl = :lvl,
+                       id_lvl0 = :id_lvl0,
+                       id_lvl1 = :id_lvl1,
+                       id_lvl2 = :id_lvl2,
+                       id_lvl3 = :id_lvl3
+                   WHERE id = :id
+                """
+    conn.execute(text(update_query), {"id": new_record_id, "lvl": params["lvl"], "id_lvl0": params["id_lvl0"], "id_lvl1": params["id_lvl1"], "id_lvl2": params["id_lvl2"], "id_lvl3": params["id_lvl3"]})
+
 def add_datum_dict(params):
     
     params.pop("subsystem_name", None)
@@ -59,11 +73,14 @@ def add_datum_dict(params):
     params["page"] = "pages/" + params["code"] + ".py"
 
     conn = st.session_state["conn"]
-    query = """
+    insert_query = """
         INSERT INTO mzkh_datums (name, code, fullname, id_subsystem, id_datum_type, parent_id, page, id_edizm)
+        OUTPUT Inserted.ID
         VALUES (:name, :code, :fullname, :id_subsystem, :id_datum_type, :parent_id, :page, :id_edizm)
     """
-    conn.execute(text(query), params)
+    result = conn.execute(text(insert_query), params)
+    new_record_id = result.fetchone()[0]
+    update_datum_level(conn,params,new_record_id)
     conn.commit()
 
 def update_datum_dict(params,original_row):    
@@ -83,52 +100,19 @@ def update_datum_dict(params,original_row):
     conn = st.session_state["conn"]
     query = """
         UPDATE mzkh_datums
-        SET name = :name, code = :code, fullname = :fullname, id_subsystem = :id_subsystem,
-            id_datum_type = :id_datum_type, parent_id = :parent_id, page = :page, id_edizm = :id_edizm
+        SET
+            name = :name,
+            code = :code,
+            fullname = :fullname,
+            id_subsystem = :id_subsystem,
+            id_datum_type = :id_datum_type,
+            parent_id = :parent_id,
+            page = :page,
+            id_edizm = :id_edizm
         WHERE id = :id
     """
     conn.execute(text(query), params)
-    conn.commit()
-def add_datum(name, code, fullname, id_subsystem, id_datum_type, parent_id,id_edizm):
-    page = "pages/" + code + ".py"
-    conn = st.session_state["conn"]
-    query = """
-        INSERT INTO mzkh_datums (name, code, fullname, id_subsystem, id_datum_type, parent_id, page, id_edizm)
-        VALUES (:name, :code, :fullname, :id_subsystem, :id_datum_type, :parent_id, :page, :id_edizm)
-    """
-    params = {
-        "name": name,
-        "code": code,
-        "fullname": fullname,
-        "id_subsystem": prepare_int(id_subsystem),
-        "id_datum_type":prepare_int(id_datum_type),
-        "parent_id": prepare_int(parent_id),
-        "page": page,
-        "id_edizm": prepare_int(id_edizm)
-    }
-    conn.execute(text(query), params)
-    conn.commit()
-def update_datum(datum_id, name, code, fullname, id_subsystem, id_datum_type, parent_id, id_edizm):
-    page = "pages/" + code + ".py"
-    conn = st.session_state["conn"]
-    query = """
-        UPDATE mzkh_datums
-        SET name = :name, code = :code, fullname = :fullname, id_subsystem = :id_subsystem,
-            id_datum_type = :id_datum_type, parent_id = :parent_id, page = :page, id_edizm = :id_edizm
-        WHERE id = :datum_id
-    """
-    params = {
-        "name": name,
-        "code": code,
-        "fullname": fullname,
-        "id_subsystem": prepare_int(id_subsystem),
-        "id_datum_type": prepare_int(id_datum_type),
-        "parent_id": prepare_int(parent_id),
-        "page": "pages/" + code + ".py",
-        "id_edizm": prepare_int(id_edizm),
-        "datum_id": prepare_int(datum_id)
-    }
-    conn.execute(text(query), params)
+    update_datum_level(conn,params,params["id"])
     conn.commit()
 def delete_datum(datum_id):
     conn = st.session_state["conn"]

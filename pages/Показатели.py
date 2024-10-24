@@ -31,6 +31,7 @@ def fill_datums_container(datums_container):
                 row["parent_id"]     = parent_id
                 row["id_datum_type"] = id_datum_type
                 row["id_edizm"]      = None
+              
                 datums_db.update_datum_dict(row,original_row)
 
         def add_datums(added_rows):
@@ -48,6 +49,7 @@ def fill_datums_container(datums_container):
                 row["parent_id"]     = parent_id
                 row["id_datum_type"] = id_datum_type
                 row["id_edizm"]      = None
+
                 datums_db.add_datum_dict(row)
 
         def delete_datums(deleted_rows):

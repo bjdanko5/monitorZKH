@@ -78,4 +78,9 @@ class DatumsParentStack(Stack):
 
     def get_subsystem_name(self):           
          return self.subsystem_name
- 
+    #params["lvl"], params["id_lvl0"], params["id_lvl1"], params["id_lvl2"], params["id_lvl3"] = st.session_state.datumsParentStack.get_lvl(new_record_id)
+    def get_lvl(self, id):
+        lvl = len(self.items)
+        ids = [item.get("id") for item in self.items[:4]]
+        ids += [None] * (4 - len(ids))  # pad with None if necessary
+        return lvl, *ids
