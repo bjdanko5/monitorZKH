@@ -10,6 +10,7 @@ try:
     import pprint
 except ImportError as e:
     print("Pressed Reload in Browser...")
+conn = utils.conn_and_auth_check()    
 #Основная программа страницы
 st.header("Показатели")
 
@@ -22,11 +23,26 @@ so.ВыборПодсистемы(so_container)
 sd_container = st.container()
 sd.ВыборПоказателя(sd_container,None)
 
-datums_container = st.container()
-rd.РедакторПоказателей(datums_container)
+st.toggle("Редактор Справочник показателя", 
+    value=st.session_state.get("mode_edit_spr_datum",False), 
+    key="mode_edit_spr_datum", 
+    help=None, 
+    on_change=None, 
+    args=None, 
+    kwargs=None, 
+    label_visibility="visible")
+if st.session_state.mode_edit_spr_datum:
+    datums_container = st.container()
+    spd.СправочникиПоказателей(datums_container)
+else:
+    if st.session_state.get("selected_spr_datum_button"):
+        del st.session_state.selected_spr_datum_button 
+    if st.session_state.get("selected_spr_datum"):    
+        del st.session_state.selected_spr_datum
 
-datums_container = st.container()
-spd.СправочникиПоказателей(datums_container)
+    datums_container = st.container()
+    rd.РедакторПоказателей(datums_container)
+
 
 
 op_status_container = st.empty()
