@@ -37,8 +37,12 @@ def РедакторСправочникаПоказателя(options_container
         delete_options(ss["deleted_rows"])
 
     #------------------------------- тело функции-------------------------------  
-    
-    datum_id = st.session_state.selected_spr_datum["id"]
+    selected_spr_datum = st.session_state.get("selected_spr_datum", None)
+    if selected_spr_datum is None:
+        st.switch_page("pages/Показатели.py")  
+
+    datum_id = st.session_state.selected_spr_datum.get("id", None)
+            
     with options_container:       
         st.header(f"Справочник для {st.session_state.selected_spr_datum['code']} {st.session_state.selected_spr_datum['name']}")
     datum_type_id = st.session_state.selected_spr_datum["id_datum_type"]
