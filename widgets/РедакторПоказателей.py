@@ -5,9 +5,6 @@ try:
     import utils.datums_db as datums_db
     import utils.datum_types_db as datum_types_db
     import utils.subsystems_db as subsystems_db
-    import widgets.ВыборПодсистемы as so
-    import widgets.ВыборПоказателя as sd
-    import utils.Stack as Stack
     import pprint
 except ImportError as e:
     print("Pressed Reload in Browser...")

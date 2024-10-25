@@ -30,6 +30,7 @@ def СправочникиПоказателей(selected_datums_container):
         return 
     selected_datums_container.subheader("Редактирование Справочника Показателя")
     selected_spr_datum = st.session_state.get("selected_spr_datum",None)
+    #-------------------------------------------------------------------------------
     with selected_datums_container:
         if selected_spr_datum:   
             selected_datums_button = st.button(
@@ -37,10 +38,12 @@ def СправочникиПоказателей(selected_datums_container):
                 type='primary',
                 key="selected_spr_datum_button" 
             )
+            st.switch_page("pages/Редактор_Справочника_Показателя.py")   
             if selected_datums_button:
                 del st.session_state.selected_spr_datum_button
                 del st.session_state.selected_spr_datum
                 st.rerun()
+    #-------------------------------------------------------------------------------            
     if selected_spr_datum is None:
         datum_parent_id = st.session_state.datumsParentStack.peek_id()
         

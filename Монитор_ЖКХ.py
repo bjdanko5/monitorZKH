@@ -59,7 +59,8 @@ def menu():
             st.Page("pages/Роли.py", title="Роли", icon = ":material/guardian:"),   
             st.Page("pages/Подсистемы.py", title="Подсистемы", icon = ":material/dns:"),   
             st.Page("pages/Типы_Показателей.py", title="Типы показателей", icon = ":material/dns:"),   
-            st.Page("pages/Показатели.py", title="Показатели", icon = ":material/dns:"), 
+            st.Page("pages/Показатели.py", title="Показатели", icon = ":material/dns:"),
+            st.Page("pages/Редактор_Справочника_Показателя.py", title="Редактор Cправочника показателя", icon = ":material/dns:"), 
         ],
         }
     adm_pages.update(user_pages)
