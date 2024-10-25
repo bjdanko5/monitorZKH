@@ -30,6 +30,8 @@ scp monitorzkh.tar user@192.168.10.130:/var/www/html/monitorzkh.tar || {
   exit 1
 }
 
+echo "Удаление файла monitorzkh.tar $(date)"
+rm monitorzkh.tar
 #docker system prune -a
 
 # Подключиться к удаленному серверу по SSH, выполнить скрипт UpgradeMonitorZKH в директории /var/www/html/,

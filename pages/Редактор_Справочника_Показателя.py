@@ -2,49 +2,25 @@ import streamlit as st
 try:
     import utils.utils as utils
     import utils.options_db as options_db
+    import utils.datum_types_db as datum_types_db
     import utils.subsystems_db as subsystems_db
     import pprint
 except ImportError as e:
     print("Pressed Reload in Browser...")
 conn = utils.conn_and_auth_check()
-def РедакторСправочника(options_container):
+def РедакторСправочникаПоказателя(options_container):
     def options_df_callback():
-        def get_id_option_type_by_option_type_name(option_type_name):
-            return int(option_types_df.loc[option_types_df['name'] == option_type_name, 'id'].iloc[0])
-        def update_options(edited_rows, original_options_df):
-            id_subsystem = st.session_state.optionsParentStack.get_id_subsystem()
-            parent_id = st.session_state.optionsParentStack.peek_id()
   
+        def update_options(edited_rows, original_options_df):
+            datum_id = st.session_state.selected_spr_datum["id"]
             for row_id, row in edited_rows.items():
-                
                 original_row = original_options_df.iloc[int(row_id)]
-                
-                option_type_name = row.get("option_type_name", original_row["option_type_name"])
-                id_option_type = get_id_option_type_by_option_type_name(option_type_name)
-                
-                row["id_subsystem"]  = id_subsystem
-                row["parent_id"]     = parent_id
-                row["id_option_type"] = id_option_type
-                row["id_edizm"]      = None
-              
+                row["id_datum"]     = datum_id
                 options_db.update_option_dict(row,original_row)
-
         def add_options(added_rows):
-            id_subsystem = st.session_state.optionsParentStack.get_id_subsystem()
-            parent_id = st.session_state.optionsParentStack.peek_id()
+            datum_id = st.session_state.selected_spr_datum["id"]
             for row in added_rows:
-                if parent_id is None:
-                    option_type_name ="Вкладка"
-                else:    
-                    option_type_name = row.get("option_type_name", "Тип Показателя")
-
-                id_option_type = get_id_option_type_by_option_type_name(option_type_name)
-                
-                row["id_subsystem"]  = id_subsystem
-                row["parent_id"]     = parent_id
-                row["id_option_type"] = id_option_type
-                row["id_edizm"]      = None
-
+                row["id_datum"]     = datum_id
                 options_db.add_option_dict(row)
 
         def delete_options(deleted_rows):
@@ -60,22 +36,19 @@ def РедакторСправочника(options_container):
         add_options(ss["added_rows"])
         delete_options(ss["deleted_rows"])
 
-    #fill_options_container тело функции-------------------------------  
-    subsystem_id = st.session_state.optionsParentStack.get_id_subsystem()
-
-    if not subsystem_id:
-        st.write("Редактирование Справочника невозможно, т.к. не выбрана подсистема.")
-        return 
+    #------------------------------- тело функции-------------------------------  
     
-    option_parent_id = st.session_state.optionsParentStack.peek_id()
+    datum_id = st.session_state.selected_spr_datum["id"]
+    with options_container:       
+        st.header(f"Справочник для {st.session_state.selected_spr_datum['code']} {st.session_state.selected_spr_datum['name']}")
+    datum_type_id = st.session_state.selected_spr_datum["id_datum_type"]
     
-    subsystems_df  = subsystems_db.get_subsystems()
-    option_types_df = option_types_db.get_option_types(option_parent_id = option_parent_id)
-        
-    options_df = options_db.get_options(subsystem_id = subsystem_id,option_parent_id=option_parent_id)
 
+    options_df = options_db.get_options(datum_id=datum_id)
     original_options_df = options_df.copy()
-    
+
+    #id,id_datum,name,int_value,float_value,date_value,nvarchar_value
+
     column_configuration = {
     
     "id": st.column_config.NumberColumn(
@@ -84,42 +57,58 @@ def РедакторСправочника(options_container):
         width="small",
         disabled=True
     ),
-
-    "code": st.column_config.TextColumn(
-        "Код",
-        help="Код",
-        width="medium",
-        required=True       
-    ),
-
     "name": st.column_config.TextColumn(
         "Наименование",
         help="Наименование",
         width="medium",
         required=True       
     ),
-    
-    "fullname": st.column_config.TextColumn(
-        "Полное Наименование",
-        help="Полное Наименование",
-        width="medium",
-        required=True       
-    ),  
-    "option_type_name": st.column_config.SelectboxColumn(
-        "Тип Показателя 🔽",
-        options=option_types_df["name"].tolist(),    
-        help="Роль",
-        width="medium",
-        required = True
-    ),
-    "page":None,
-    "subsystem_name": None,
-    "id_option_type": None,
-    "id_subsystem": None,
-    "parent_id": None,
-    "id_edizm" : None,
-
+    "id_datum": None,
+    "int_value": None,
+    "float_value": None,
+    "date_value": None,
+    "nvarchar_value": None,
     }
+    selected_datum_type = datum_types_db.get_datum_types(datum_type_id = datum_type_id)["code"][0]
+    if selected_datum_type == "option_int":
+       column_configuration.update(
+        {"int_value": st.column_config.NumberColumn(
+            "Значение", 
+            help="Значение",
+            width="medium",
+       )}) 
+    if selected_datum_type == "option_float":
+       column_configuration.update(
+        {"float_value": st.column_config.NumberColumn(
+            "Значение", 
+            help="Значение",
+            width="medium",
+            required=True 
+       )}) 
+    if selected_datum_type == "option_date":
+       column_configuration.update(
+        {"date_value": st.column_config.DateColumn(
+            "Значение", 
+            help="Значение",
+            width="medium",
+            required=True 
+       )}) 
+    if selected_datum_type == "option_string":
+       column_configuration.update(
+        {"nvarchar_value": st.column_config.TextColumn(
+            "Значение", 
+            help="Значение",
+            width="large",
+            required=True 
+       )}) 
+    if selected_datum_type == "option_bool":
+        column_configuration.update(
+        {"int_value": st.column_config.CheckboxColumn(
+            "Значение", 
+            help="Значение",
+            width="small",
+            required=True 
+       )}) 
 
     with options_container:       
 
@@ -133,5 +122,9 @@ def РедакторСправочника(options_container):
             on_change=options_df_callback,
             key="event_options_df_editor"
             )
+#Основная программа
+conn = utils.conn_and_auth_check() 
 
-    return 
+options_container = st.container()
+РедакторСправочникаПоказателя(options_container)
+ 

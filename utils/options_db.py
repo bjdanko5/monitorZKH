@@ -7,7 +7,7 @@ def prepare_int(i):
 def get_options(datum_id=None):
     conn = st.session_state["conn"]    
     query = """
-            SELECT id,
+            SELECT id
                 ,id_datum
                 ,name
                 ,int_value
@@ -35,13 +35,21 @@ def get_options(datum_id=None):
         df = pd.DataFrame(columns=columns)
     return df
 def add_option_dict(params):
+    defaults = {
+        "int_value": None,
+        "float_value": None,
+        "date_value": None,
+        "nvarchar_value": None,
+    }
+
+    params.update({key: value for key, value in defaults.items() if key not in params})
     params = {
     key: int(value) if isinstance(value, np.int64) 
     else "Не задано" if value in [None, ""] and isinstance(value, str) 
     else value 
     for key, value in params.items()
     }
-    params["page"] = "pages/" + params["code"] + ".py"
+
 
     conn = st.session_state["conn"]
     insert_query = """
@@ -78,8 +86,7 @@ def update_option_dict(params,original_row):
     else value 
     for key, value in params.items()
     }
-    params["page"] = "pages/" + params["code"] + ".py"
-
+   
     conn = st.session_state["conn"]
     query = """
         UPDATE mzkh_options
