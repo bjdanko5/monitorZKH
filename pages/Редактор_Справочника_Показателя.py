@@ -13,14 +13,19 @@ def РедакторСправочникаПоказателя(options_container
   
         def update_options(edited_rows, original_options_df):
             datum_id = st.session_state.selected_spr_datum["id"]
+            
             for row_id, row in edited_rows.items():
                 original_row = original_options_df.iloc[int(row_id)]
                 row["id_datum"]     = datum_id
+                if st.session_state.selected_datum_type == "option_bool":
+                    row["int_value"] = 1 if row["bool_value"] else 0
                 options_db.update_option_dict(row,original_row)
         def add_options(added_rows):
             datum_id = st.session_state.selected_spr_datum["id"]
             for row in added_rows:
                 row["id_datum"]     = datum_id
+                if st.session_state.selected_datum_type == "option_bool":
+                    row["int_value"] = 1 if row["bool_value"] else 0
                 options_db.add_option_dict(row)
 
         def delete_options(deleted_rows):
@@ -49,6 +54,8 @@ def РедакторСправочникаПоказателя(options_container
     
 
     options_df = options_db.get_options(datum_id=datum_id)
+    options_df['bool_value'] = options_df['int_value'].apply(lambda x: True if x == 1 else False)
+
     original_options_df = options_df.copy()
 
     #id,id_datum,name,int_value,float_value,date_value,nvarchar_value
@@ -72,19 +79,21 @@ def РедакторСправочникаПоказателя(options_container
     "float_value": None,
     "date_value": None,
     "nvarchar_value": None,
+    "bool_value": None,
     }
     selected_datum_type = datum_types_db.get_datum_types(datum_type_id = datum_type_id)["code"][0]
+    st.session_state.selected_datum_type = selected_datum_type
     if selected_datum_type == "option_int":
        column_configuration.update(
         {"int_value": st.column_config.NumberColumn(
-            "Значение", 
+            "Значение Целое", 
             help="Значение",
             width="medium",
        )}) 
     if selected_datum_type == "option_float":
        column_configuration.update(
         {"float_value": st.column_config.NumberColumn(
-            "Значение", 
+            "Значение Число", 
             help="Значение",
             width="medium",
             required=True 
@@ -93,26 +102,34 @@ def РедакторСправочникаПоказателя(options_container
        column_configuration.update(
         {"date_value": st.column_config.DateColumn(
             "Значение", 
-            help="Значение",
+            help="Значение Дата",
             width="medium",
             required=True 
        )}) 
     if selected_datum_type == "option_string":
        column_configuration.update(
         {"nvarchar_value": st.column_config.TextColumn(
-            "Значение", 
+            "Значение Строка", 
             help="Значение",
             width="large",
             required=True 
        )}) 
     if selected_datum_type == "option_bool":
         column_configuration.update(
-        {"int_value": st.column_config.CheckboxColumn(
+        {"int_value": st.column_config.NumberColumn(
             "Значение", 
-            help="Значение",
+            help="Значение 1 / 0",
+            width="small",
+            disabled=True 
+       ),
+        "bool_value": st.column_config.CheckboxColumn(
+            "Значение", 
+            help="Значение Да / Нет",
             width="small",
             required=True 
-       )}) 
+       ),
+
+       }) 
 
     with options_container:       
 

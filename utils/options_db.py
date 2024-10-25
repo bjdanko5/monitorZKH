@@ -35,6 +35,8 @@ def get_options(datum_id=None):
         df = pd.DataFrame(columns=columns)
     return df
 def add_option_dict(params):
+    params.pop("bool_value", None)
+    
     defaults = {
         "int_value": None,
         "float_value": None,
@@ -75,7 +77,7 @@ def add_option_dict(params):
     conn.commit()
 
 def update_option_dict(params,original_row):    
- 
+    params.pop("bool_value", None)
     params.update({key: value for key, value in original_row.items() if key not in params})
     #params.pop("subsystem_name", None)
     #params.pop("option_type_name", None)
