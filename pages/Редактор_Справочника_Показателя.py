@@ -116,12 +116,13 @@ def РедакторСправочникаПоказателя(options_container
        )}) 
     if selected_datum_type == "option_bool":
         column_configuration.update(
-        {"int_value": st.column_config.NumberColumn(
-            "Значение", 
-            help="Значение 1 / 0",
-            width="small",
-            disabled=True 
-       ),
+        {    
+        #"int_value": st.column_config.NumberColumn(
+        #    "Значение", 
+        #    help="Значение 1 / 0",
+        #    width="small",
+        #    disabled=True 
+        #),
         "bool_value": st.column_config.CheckboxColumn(
             "Значение", 
             help="Значение Да / Нет",

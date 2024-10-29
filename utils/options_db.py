@@ -4,6 +4,31 @@ from sqlalchemy import text
 import numpy as np
 def prepare_int(i):
     return i if i is None else int(i)
+
+def get_value_field_name_for_datum_type(datum_type_code):
+    if datum_type_code in("int","option_int"):
+        value_field_name = 'int_value' 
+    elif datum_type_code in ("string","option_string"):
+        value_field_name ='nvarchar_value'
+    elif datum_type_code  in ("float","option_float"):
+       value_field_name ='float_value' 
+    elif datum_type_code in ("date","option_date"):   
+        value_field_name ='date_value' 
+    elif datum_type_code in ("bool","option_bool"):   
+        value_field_name = 'int_value'  
+    return value_field_name 
+
+def get_typed_options(value_for_datum_type,datum_id,datum_type_code):
+    value_field_name = get_value_field_name_for_datum_type(datum_type_code)
+    options_df = get_options(datum_id)
+    typed_options = options_df[value_field_name]
+
+    value_indexes = typed_options.index[typed_options == value_for_datum_type].tolist()
+
+    value_index = value_indexes[0] if len(value_indexes)>0 else None
+
+    return value_index,typed_options
+
 def get_options(datum_id=None):
     conn = st.session_state["conn"]    
     query = """
@@ -16,9 +41,10 @@ def get_options(datum_id=None):
                 ,nvarchar_value
             FROM mzkh_options
             WHERE id_datum = :datum_id
+            ORDER BY name
         """
     params = {
-        "datum_id": datum_id,
+        "datum_id": prepare_int(datum_id),
     }
     result = conn.execute(text(query), params)
     rows = result.fetchall() 
