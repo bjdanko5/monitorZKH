@@ -7,10 +7,10 @@ try:
     import utils.options_db as options_db
     import utils.subsystems_db as subsystems_db
     import widgets.ЗаголовокПодсистемы as ЗаголовокПодсистемы
+    import widgets.ВыборИзСправочника as ВыборИзСправочника
     import extra_streamlit_components as stx  
 except ImportError as e:
     print("Pressed Reload in Browser...")
-
 def get_value_for_datum_type(row,datum_type_code = None):
     datum_type_code = row['datum_type_code'] if datum_type_code == None else datum_type_code
     if datum_type_code in("int","option_int"):
@@ -172,4 +172,12 @@ with Вкладки_container:
                                         )
                             
             with col3:
-                pass
+                if 'option' in row['datum_type_code']:
+                    if st.button(
+                        label = 'Выборать из Справочника',
+                        key  = ("pick_datum_value_btn"+str(row['id'])),
+                        kwargs = row.to_dict()
+                        ):
+                        ВыборИзСправочника.BыборИзCправочникаПоказателей(row['id'],row['id_datum_type'],row['datum_type_code'],row['code'],row['name'])
+                        
+        st.divider()            

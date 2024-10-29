@@ -32,7 +32,7 @@ def get_datum_values(id_houses_objectid,subsystem_name=None, subsystem_id=None, 
         AND (:id_lvl1 IS NULL OR d.id_lvl1 = :id_lvl1)
         AND (:id_lvl2 IS NULL OR d.id_lvl2 = :id_lvl2)
         AND (:id_lvl3 IS NULL OR d.id_lvl3 = :id_lvl3)
-        AND (:mode='all' OR :mode IS NULL AND (:selected_datum_id = v.id_datum))
+        AND (:mode='all' OR :mode='one' AND (:selected_datum_id = v.id_datum))
         
         ORDER BY CASE
         WHEN TRY_CONVERT(INT, REPLACE(d.code, '.', '')) IS NOT NULL
@@ -56,7 +56,7 @@ def get_datum_values(id_houses_objectid,subsystem_name=None, subsystem_id=None, 
             params[f"id_lvl{lvl}"] = datum_id_lvl
         else:    
             params[f"id_lvl{lvl}"] = None
-
+    
     result = conn.execute(text(query), params)
     rows = result.fetchall()
     
@@ -67,6 +67,50 @@ def get_datum_values(id_houses_objectid,subsystem_name=None, subsystem_id=None, 
         df = pd.DataFrame(columns=columns)
     
     return df
+def get_datum_value(id_houses_objectid,selected_datum_id):
+    conn = st.session_state["conn"]    
+    query = """
+       SELECT d.*, 
+       s.name AS subsystem_name,
+       dt.name AS datum_type_name,
+       dt.code AS datum_type_code
+      ,v.id AS id_datum_values
+      ,ISNULL(v.int_value,0) AS int_value
+      ,ISNULL(v.float_value,0) AS float_value
+      ,v.date_value AS date_value
+      ,ISNULL(v.nvarchar_value,'') AS nvarchar_value
+      ,v.id_table_value AS id_table_value
+      ,ISNULL(v.id_houses_objectid,v.id_unlinked_houses_id) AS id_houses_objectid
+        FROM mzkh_datums d
+        LEFT JOIN mzkh_datum_values v ON  d.id = v.id_datum
+        AND :id_houses_objectid = v.id_houses_objectid
+        LEFT JOIN mzkh_subsystems s ON d.id_subsystem = s.id
+        LEFT JOIN mzkh_datum_types dt ON d.id_datum_type = dt.id
+        WHERE :selected_datum_id = v.id_datum
+        ORDER BY CASE
+        WHEN TRY_CONVERT(INT, REPLACE(d.code, '.', '')) IS NOT NULL
+        THEN TRY_CONVERT(INT, REPLACE(d.code, '.', ''))
+        ELSE 9999999
+        END,d.code
+    """
+    #AND (:datum_parent_id IS NULL OR parent_id = :datum_parent_id)
+    params = {
+        "selected_datum_id" : prepare_int(selected_datum_id),
+        "id_houses_objectid": prepare_int(id_houses_objectid)
+    }
+    
+    
+    result = conn.execute(text(query), params)
+    rows = result.fetchall()
+    
+    if rows:
+        df = pd.DataFrame(rows)
+    else:
+        columns = ['id', 'name', 'id_subsystem', 'subsystem_name', 'id_datum_type', 'datum_type_name','datum_type_code', 'code', 'fullname', 'parent_id', 'page', 'id_edizm','lvl','id_lvl0','id_lvl1','id_lvl2','id_lvl3','id_datum_values','int_value','float_value','date_value','nvarchar_value','id_table_value','id_houses_objectid']
+        df = pd.DataFrame(columns=columns)
+    
+    return df
+
 def merge_datum_values_values(conn,params):
     #keys_params = ['id', 'name', 'id_subsystem', 'subsystem_name', 'id_datum_type', 'datum_type_name','datum_type_code', 'code', 'fullname', 'parent_id', 'page', 'id_edizm','lvl','id_lvl0','id_lvl1','id_lvl2','id_lvl3','id_datum_values','int_value','float_value','date_value','nvarchar_value','id_table_value','id_houses_objectid']
     keys_needed_params=['id_datum_values', 'id_datum', 'int_value', 'float_value','date_value','nvarchar_value','id_table_value','id_houses_objectid','id_unlinked_houses_id']
