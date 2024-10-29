@@ -54,16 +54,10 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
             "id": st.column_config.NumberColumn(
                 "ИД", help="ИД", width="small",disabled=True
             ),
-            "parent_id": st.column_config.NumberColumn(
-                "ИД Родитель", help="ИД", width="small",disabled=True
-            ),       
-            "id_subsystem": st.column_config.NumberColumn(
-                "ИД Подсистемы", help="ИД Подсистемы", width="small",disabled=True
-            ),
             "name": st.column_config.TextColumn(
                 "Наименование",
                 help="Наименование",
-                width="medium",
+                width="large",
                 required=True,
                 disabled=True       
             ),
@@ -74,19 +68,22 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
                 required=True,
                 disabled=True       
             ),
-            "fullname": st.column_config.TextColumn(
-                "Полное Наименование",
-                help="Полное Наименование",
-                width="medium",
-                required=True       
-            ),
+            "parent_id":None,
+            "id_subsystem":None,       
+            "fullname":None,
+            #"fullname": st.column_config.TextColumn(
+            #    "Полное Наименование",
+            #    help="Полное Наименование",
+            #    width="medium",
+            #    required=True       
+            #),
+
             }
-        
             with selected_datums_container:    
                 event_datums_df = st.dataframe(
                     datums_df, 
                     column_config=column_configuration,
-                    use_container_width=True,
+                    use_container_width=False,
                     hide_index=True,
                     on_select=on_select_datums_df,
                     selection_mode="single-row",

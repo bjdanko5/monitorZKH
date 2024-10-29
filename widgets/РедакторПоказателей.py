@@ -5,6 +5,7 @@ try:
     import utils.datums_db as datums_db
     import utils.datum_types_db as datum_types_db
     import utils.subsystems_db as subsystems_db
+    import utils.edizms_db as edizms_db
     import pprint
 except ImportError as e:
     print("Pressed Reload in Browser...")
@@ -13,6 +14,9 @@ def РедакторПоказателей(datums_container):
     def datums_df_callback():
         def get_id_datum_type_by_datum_type_name(datum_type_name):
             return int(datum_types_df.loc[datum_types_df['name'] == datum_type_name, 'id'].iloc[0])
+        def get_id_edizm_by_edizm_name(edizm_name):
+            return int(edizms_df.loc[edizms_df['name'] == edizm_name, 'id'].iloc[0])
+
         def update_datums(edited_rows, original_datums_df):
             id_subsystem = st.session_state.datumsParentStack.get_id_subsystem()
             parent_id = st.session_state.datumsParentStack.peek_id()
@@ -23,11 +27,14 @@ def РедакторПоказателей(datums_container):
                 
                 datum_type_name = row.get("datum_type_name", original_row["datum_type_name"])
                 id_datum_type = get_id_datum_type_by_datum_type_name(datum_type_name)
-                
+
+                edizm_name = row.get("edizm_name", original_row["edizm_name"])
+                id_edizm = get_id_edizm_by_edizm_name(edizm_name)
+
                 row["id_subsystem"]  = id_subsystem
                 row["parent_id"]     = parent_id
                 row["id_datum_type"] = id_datum_type
-                row["id_edizm"]      = None
+                row["id_edizm"]      = id_edizm 
               
                 datums_db.update_datum_dict(row,original_row)
 
@@ -41,11 +48,14 @@ def РедакторПоказателей(datums_container):
                     datum_type_name = row.get("datum_type_name", "Тип Показателя")
 
                 id_datum_type = get_id_datum_type_by_datum_type_name(datum_type_name)
-                
+
+                edizm_name = row.get("edizm_name", "Единица измерения")
+                id_edizm = get_id_edizm_by_edizm_name(edizm_name)
+
                 row["id_subsystem"]  = id_subsystem
                 row["parent_id"]     = parent_id
                 row["id_datum_type"] = id_datum_type
-                row["id_edizm"]      = None
+                row["id_edizm"]      = id_edizm
 
                 datums_db.add_datum_dict(row)
 
@@ -73,6 +83,7 @@ def РедакторПоказателей(datums_container):
     
     subsystems_df  = subsystems_db.get_subsystems()
     datum_types_df = datum_types_db.get_datum_types(datum_parent_id = datum_parent_id)
+    edizms_df = edizms_db.get_edizms()
         
     datums_df = datums_db.get_datums(subsystem_id = subsystem_id,datum_parent_id=datum_parent_id)
 
@@ -114,13 +125,27 @@ def РедакторПоказателей(datums_container):
         width="medium",
         required = True
     ),
-    "page":None,
-    "subsystem_name": None,
-    "id_datum_type": None,
-    "id_subsystem": None,
-    "parent_id": None,
-    "id_edizm" : None,
 
+    "edizm_name": st.column_config.SelectboxColumn(
+        "Ед. Изм 🔽",
+        options=edizms_df["name"].tolist(),    
+        help="Еденица измерения",
+        width="small",
+        required = True
+    ),
+
+    
+    "id_edizm"      :None,
+    "page"          :None,
+    "subsystem_name": None,
+    "id_datum_type" : None,
+    "id_subsystem"  : None,
+    "parent_id"     : None,   
+    "lvl"           : None,
+    "id_lvl0"       : None,
+    "id_lvl1"       : None,
+    "id_lvl2"       : None,
+    "id_lvl3"       : None,
     }
 
     with datums_container:       
