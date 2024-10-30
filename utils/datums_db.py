@@ -16,10 +16,11 @@ def get_datums_Выбор(subsystem_name=None, subsystem_id=None, subsystem_code
 def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datum_parent_id=None,datum_lvl=None,datum_id_lvl=None,mode = None):
     conn = st.session_state["conn"]    
     query = """
-        SELECT d.*, s.name AS subsystem_name, dt.name AS datum_type_name
+        SELECT d.*, s.name AS subsystem_name, dt.name AS datum_type_name,e.name AS edizm_name
         FROM mzkh_datums d
         LEFT JOIN mzkh_subsystems s ON d.id_subsystem = s.id
         LEFT JOIN mzkh_datum_types dt ON d.id_datum_type = dt.id
+        LEFT JOIN mzkh_edizms e ON d.id_edizm = e.id
         WHERE (:subsystem_name IS NULL OR s.name = :subsystem_name)
         AND (:subsystem_id IS NULL OR s.id = :subsystem_id)
         AND (:subsystem_code IS NULL OR s.code = :subsystem_code)
@@ -55,7 +56,7 @@ def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datu
     if rows:
         df = pd.DataFrame(rows)
     else:
-        columns = ['id', 'name', 'id_subsystem', 'subsystem_name', 'id_datum_type', 'datum_type_name', "code", "fullname", "parent_id", "page", "id_edizm","lvl","id_lvl0","id_lvl1","id_lvl2","id_lvl3"]
+        columns = ['id', 'name', 'id_subsystem', 'subsystem_name', 'id_datum_type', 'datum_type_name', "code", "fullname", "parent_id", "page", "id_edizm","lvl","id_lvl0","id_lvl1","id_lvl2","id_lvl3","edizm_name"]
         df = pd.DataFrame(columns=columns)
     
     return df

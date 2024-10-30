@@ -1,16 +1,34 @@
 import streamlit as st
 try:
     import utils.subsystems_db as subsystems_db
+    import extra_streamlit_components as stx 
 except ImportError as e:
     print("Pressed Reload in Browser...")
 
+def custom_sort(item, saved_Подсистема):
+    if item.id == saved_Подсистема:
+        return 0  # Первый элемент, если id совпадает
+    else:
+        return 1  # Остальные элементы
+
 def subsystem_menu():
     subsystems_df = subsystems_db.get_subsystems()
+    data = [
+    stx.TabBarItemData(id=int(row['id']), title=row['name'], description="Подсистема")
+    for index, row in subsystems_df.iterrows()
+    ]
+    saved_Подсистема = st.session_state.saved_Подсистема if 'saved_Подсистема' in st.session_state else None
+    data = sorted(data, key=lambda x: custom_sort(x, saved_Подсистема))
+    selected_Подсистема =int(stx.tab_bar(data=data, default=data[0].id,key ="selected_Подсистема"))
+    st.session_state.saved_Подсистема = selected_Подсистема 
+    
+    """"#
     cols = st.columns(len(subsystems_df))
 
     for i, subsystem in enumerate(subsystems_df.itertuples()):
         with cols[i]:
             st.page_link(subsystem.page, label=subsystem.name, icon=":material/assignment_ind:")
+    """        
 def setup_op_status(op_status_container,first_visit_status="Готово"):
     if first_visit_op_status():
         show_op_status(op_status_container,first_visit_status)

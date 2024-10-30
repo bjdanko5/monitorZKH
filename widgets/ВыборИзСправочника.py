@@ -117,6 +117,7 @@ def BыборИзCправочникаПоказателей(datum_id,datum_type
             use_container_width=True,
             hide_index=True,
             on_select=options_df_callback,
+            selection_mode="single-row",
             key="event_options_df"+str(datum_id)
             )
 

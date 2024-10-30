@@ -12,6 +12,7 @@ def get_datum_values(id_houses_objectid,subsystem_name=None, subsystem_id=None, 
        s.name AS subsystem_name,
        dt.name AS datum_type_name,
        dt.code AS datum_type_code
+      ,e.name  AS edizm_name
       ,v.id AS id_datum_values
       ,ISNULL(v.int_value,0) AS int_value
       ,ISNULL(v.float_value,0) AS float_value
@@ -24,6 +25,7 @@ def get_datum_values(id_houses_objectid,subsystem_name=None, subsystem_id=None, 
         AND :id_houses_objectid = v.id_houses_objectid
         LEFT JOIN mzkh_subsystems s ON d.id_subsystem = s.id
         LEFT JOIN mzkh_datum_types dt ON d.id_datum_type = dt.id
+        LEFT JOIN mzkh_edizms e ON d.id_edizm = e.id
         WHERE (:subsystem_name IS NULL OR s.name = :subsystem_name)
         AND (:subsystem_id IS NULL OR s.id = :subsystem_id)
         AND (:subsystem_code IS NULL OR s.code = :subsystem_code)
@@ -74,6 +76,7 @@ def get_datum_value(id_houses_objectid,selected_datum_id):
        s.name AS subsystem_name,
        dt.name AS datum_type_name,
        dt.code AS datum_type_code
+      ,e.name  AS edizm_name
       ,v.id AS id_datum_values
       ,ISNULL(v.int_value,0) AS int_value
       ,ISNULL(v.float_value,0) AS float_value
@@ -86,6 +89,7 @@ def get_datum_value(id_houses_objectid,selected_datum_id):
         AND :id_houses_objectid = v.id_houses_objectid
         LEFT JOIN mzkh_subsystems s ON d.id_subsystem = s.id
         LEFT JOIN mzkh_datum_types dt ON d.id_datum_type = dt.id
+        LEFT JOIN mzkh_edizms e ON d.id_edizm = e.id
         WHERE :selected_datum_id = v.id_datum
         ORDER BY CASE
         WHEN TRY_CONVERT(INT, REPLACE(d.code, '.', '')) IS NOT NULL
