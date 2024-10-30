@@ -5,6 +5,8 @@ import sys
 try:
     import utils.utils as utils
     import utils.subsystems_db as subsystems_db
+    #import pages.s as S
+    
 except ImportError as e:
     print("Pressed Reload in Browser...")
 
@@ -47,10 +49,10 @@ def menu():
         st.Page("pages/Поиск_Дома.py", title="Поиск дома",icon = ":material/search:"),   
     ]
 
-    subsystems_df = subsystems_db.get_subsystems()
-    for subsystem in subsystems_df.itertuples():
-        user_pages["Информация выбранного Дома"].append(st.Page(subsystem.page, title=subsystem.name, icon=":material/assignment_ind:"))
-  
+    #subsystems_df = subsystems_db.get_subsystems()
+    #for subsystem in subsystems_df.itertuples():
+    #    user_pages["Информация выбранного Дома"].append(st.Page(subsystem.page, title=subsystem.name, icon=":material/assignment_ind:"))
+    user_pages["Мониторинг Дома"].append(st.Page("pages/s.py", title="Выбранный Дом", icon=":material/assignment_ind:"))
     
     adm_pages = {
         "Администраторам": [
