@@ -13,7 +13,7 @@ except ImportError as e:
 
 from logtail import LogtailHandler
 import logging
-Версия ="0.0.5"
+Версия ="0.0.6"
 handler = LogtailHandler(source_token="HuXAzztxnhkthASvbRxaZv2a")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -41,18 +41,17 @@ def menu():
    }
 
     user_pages={
-    "Поиск": [],
-    "Информация выбранного Дома": [],   
     }     
-
     user_pages ["Поиск"] = [
         st.Page("pages/Поиск_Дома.py", title="Поиск дома",icon = ":material/search:"),   
+
     ]
 
     #subsystems_df = subsystems_db.get_subsystems()
     #for subsystem in subsystems_df.itertuples():
     #    user_pages["Информация выбранного Дома"].append(st.Page(subsystem.page, title=subsystem.name, icon=":material/assignment_ind:"))
-    user_pages["Мониторинг Дома"].append(st.Page("pages/s.py", title="Выбранный Дом", icon=":material/assignment_ind:"))
+    user_pages["Мониторинг Дома"]=[]
+    user_pages["Мониторинг Дома"].append(st.Page("pages/Мониторинг.py", title="Выбранный Дом", icon=":material/assignment_ind:"))
     
     adm_pages = {
         "Администраторам": [

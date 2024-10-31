@@ -8,7 +8,8 @@ try:
     import utils.subsystems_db as subsystems_db
     import widgets.ЗаголовокПодсистемы as ЗаголовокПодсистемы
     import widgets.ВыборИзСправочника as ВыборИзСправочника
-    import extra_streamlit_components as stx  
+    import extra_streamlit_components as stx 
+    import widgets.ФайлыПоказателя as ФайлыПоказателя 
 except ImportError as e:
     print("Pressed Reload in Browser...")
 def get_value_for_datum_type(row,datum_type_code = None):
@@ -55,7 +56,7 @@ def custom_sort(item, saved_Вкладка):
 
 conn = utils.conn_and_auth_check()
 
-ЗаголовокПодсистемы.ЗаголовокПодсистемы("Паспорт МКД")
+ЗаголовокПодсистемы.ЗаголовокПодсистемы()
 Вкладки_container = st.container()
 with Вкладки_container:
     if st.session_state.get("selected_Подсистема",None):
@@ -208,12 +209,20 @@ with Вкладки_container:
                         with sub_col3:
                             st.markdown(get_formatted_edizm(row),unsafe_allow_html = True)        
                 with col3:
+                    if st.button(
+                            label = 'Файлы',
+                            key  = ("files_datum_value_btn"+str(row['id'])),
+                            kwargs = row.to_dict()
+                            ):
+                            ФайлыПоказателя.ФайлыПоказателя(row['id'],row['id_datum_type'],row['datum_type_code'],row['code'],row['name'])
+ 
                     if 'option' in row['datum_type_code']:
                         if st.button(
-                            label = 'Выборать из Справочника',
+                            label = 'Выбрать из Справочника',
                             key  = ("pick_datum_value_btn"+str(row['id'])),
                             kwargs = row.to_dict()
                             ):
                             ВыборИзСправочника.BыборИзCправочникаПоказателей(row['id'],row['id_datum_type'],row['datum_type_code'],row['code'],row['name'])
+
                             
             st.divider()            
