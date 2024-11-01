@@ -13,7 +13,7 @@ except ImportError as e:
     print("Pressed Reload in Browser...")
 conn = utils.conn_and_auth_check()
 @st.fragment
-def ПоказатьЗагруженныеФайлы(datum_id,datum_code,datum_name):
+def ПоказатьЗагруженныеФайлы(datum_id,datum_code,datum_name,files_empty,upl=None):
     def files_df_callback():
         selection_rows =st.session_state.get("event_files_df"+str(datum_id)+"_"+str(st.session_state.uploader_key)).selection.rows
         if len(selection_rows) > 0:        
@@ -87,6 +87,19 @@ def ПоказатьЗагруженныеФайлы(datum_id,datum_code,datum_n
             selection_mode="single-row",
             key="event_files_df"+str(datum_id)+"_"+str(st.session_state.uploader_key)
             )
+    if st.session_state.get("selected_file",None):
+       # if not st.session_state.get("del_button"+str(st.session_state.get("selected_file"))):
+           if st.button(label="Удалить",key="del_button"+str(st.session_state.get("selected_file")['id'])):
+                files_db.delete_file(st.session_state.get("selected_file")['id'])        
+                del st.session_state.selected_file
+                st.session_state.uploader_key += 1 
+                with files_empty:
+                    ПоказатьЗагруженныеФайлы(datum_id,datum_code,datum_name,files_empty)
+                    st.session_state.uploader_key += 1
+                    if upl:
+                        upl.empty()
+                     
+                                            
 
     
 @st.dialog("Файлы Показателя", width="large")    
@@ -98,7 +111,7 @@ def ФайлыПоказателя(datum_id,datum_type_id,datum_type_code,datum_
     files_container = st.container()
     files_empty = st.empty()
     with files_empty:
-        ПоказатьЗагруженныеФайлы(datum_id,datum_code,datum_name)
+        ПоказатьЗагруженныеФайлы(datum_id,datum_code,datum_name,files_empty)
     with files_container:       
         st.header(f"{datum_code} {datum_name}")
            
@@ -193,7 +206,8 @@ def ФайлыПоказателя(datum_id,datum_type_id,datum_type_code,datum_
             st.session_state.uploader_key += 1 
             with upl:
                 uploaded_files = st.file_uploader(label="Отправьте файлы", accept_multiple_files=True, key=f"uploader_{st.session_state.uploader_key}")
-            ПоказатьЗагруженныеФайлы(datum_id,datum_code,datum_name) 
+            ПоказатьЗагруженныеФайлы(datum_id,datum_code,datum_name,files_empty,upl) 
+           
 
 
  
