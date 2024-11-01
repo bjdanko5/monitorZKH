@@ -20,14 +20,7 @@ def ПоказатьЗагруженныеФайлы(datum_id,datum_code,datum_n
             selected_row_id = selection_rows[0] 
             selected_item =  files_df.iloc[selected_row_id].to_dict()
             st.session_state.selected_file = selected_item
-            #id_houses_objectid = st.session_state.get("selected_house_objectid")
-            #datum_values_df = datum_values_db.get_datum_value(id_houses_objectid,selected_datum_id=datum_id)
-            #value_field_name = options_db.get_value_field_name_for_datum_type(datum_type_code)
-            #for index, row in datum_values_df.iterrows():
-            #    row[value_field_name] = selected_item[value_field_name]
-            #    datum_values_db.merge_datum_values_values(conn,row)
-            #st.session_state.option_is_selected = True        
-        
+   
     #------------------------------- тело функции-------------------------------  
     
     files_df = files_db.get_files(datum_id=datum_id)
@@ -98,6 +91,9 @@ def ПоказатьЗагруженныеФайлы(datum_id,datum_code,datum_n
                     st.session_state.uploader_key += 1
                     if upl:
                         upl.empty()
+                        with upl:    
+                            st.info("Для загрузки файлов зайдите  в режим Файлы заново.",icon=":material/help:")
+                        
                      
                                             
 

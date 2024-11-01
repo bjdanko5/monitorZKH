@@ -214,7 +214,7 @@ with Вкладки_container:
                             key  = ("files_datum_value_btn"+str(row['id'])),
                             kwargs = row.to_dict()
                             ):
-                            keys_to_delete = [key for key in st.session_state.keys() if 'uploader_key' in key]
+                            keys_to_delete = [key for key in st.session_state.keys() if 'uploader' in key]
                             for key in keys_to_delete:
                                 del st.session_state[key]
                             ФайлыПоказателя.ФайлыПоказателя(row['id'],row['id_datum_type'],row['datum_type_code'],row['code'],row['name'])
