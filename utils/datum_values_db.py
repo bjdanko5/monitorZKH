@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from sqlalchemy.exc import PendingRollbackError
 from sqlalchemy import text
 import numpy as np
 import math
@@ -154,7 +155,12 @@ def merge_datum_values_values(conn,params):
                         --OUTPUT Inserted.ID
                         VALUES (source.id_datum, source.int_value, source.float_value, source.date_value, source.nvarchar_value, source.id_table_value, source.id_houses_objectid, source.id_unlinked_houses_id);
                     """
-    result = conn.execute(text(merge_query), params)
+
+    try:
+        result = conn.execute(text(merge_query), params)
+    except PendingRollbackError:
+        conn.rollback()  # Полный откат транзакции
+        result = conn.execute(text(merge_query), params)
     #row = result.fetchone()
     #new_record_id = row[0]
     #updated_record_id = row[1] if len(row) > 1 else None
