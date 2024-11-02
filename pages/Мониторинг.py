@@ -11,6 +11,7 @@ try:
     import extra_streamlit_components as stx 
     import widgets.ФайлыПоказателя as ФайлыПоказателя
     import widgets.Изображения as Изображения
+    import widgets.Документы as Документы
 except ImportError as e:
     print("Pressed Reload in Browser...")
 def get_value_for_datum_type(row,datum_type_code = None):
@@ -225,6 +226,13 @@ with Вкладки_container:
                             kwargs = row.to_dict()
                             ):        
                             Изображения.Изображения(row['id'],row['id_datum_type'],row['datum_type_code'],row['code'],row['name'])
+                    if st.button(
+                            label = 'Документы',
+                            key  = ("doc_datum_value_btn"+str(row['id'])),
+                            kwargs = row.to_dict()
+                            ):        
+                            Документы.Документы(row['id'],row['id_datum_type'],row['datum_type_code'],row['code'],row['name'])
+         
  
                     if 'option' in row['datum_type_code']:
                         if st.button(
