@@ -1,9 +1,6 @@
 import streamlit as st
 try:
     import utils.utils as utils
-    #import utils.files_db as files_db
-    import utils.datum_types_db as datum_types_db
-    import utils.subsystems_db as subsystems_db
     import utils.files_db as files_db
     import pprint
     import requests
@@ -87,12 +84,11 @@ def ПоказатьЗагруженныеФайлы(datum_id,datum_code,datum_n
                 del st.session_state.selected_file
                 st.session_state.uploader_key += 1 
                 with files_empty:
-                    ПоказатьЗагруженныеФайлы(datum_id,datum_code,datum_name,files_empty)
-                    st.session_state.uploader_key += 1
-                    if upl:
-                        upl.empty()
-                        with upl:    
-                            st.info("Для загрузки файлов зайдите  в режим Файлы заново.",icon=":material/help:")
+                    ПоказатьЗагруженныеФайлы(datum_id,datum_code,datum_name,files_empty,upl)
+                if upl:
+                    upl.empty()
+                    with upl:    
+                        st.info("Для загрузки файлов зайдите  в режим Файлы заново.",icon=":material/help:")
                         
                      
                                             
@@ -170,9 +166,10 @@ def ФайлыПоказателя(datum_id,datum_type_id,datum_type_code,datum_
         url = 'http://192.168.10.130:8080/upload'
 
         # Отправка POST запроса с файлом
-        files = {'uploads': (uploaded_file.name, file_data, 'application/octet-stream')}
-        data = {'folder': str(datum_id)}
-        response = requests.post(url, files=files, data = data)
+        files = {'uploads': (uploaded_file.name, file_data, 'application/octet-stream')
+                 ,'path': str(datum_id)}
+        
+        response = requests.post(url, files=files)
         
         # Проверка статуса ответа
         if response.status_code == 200:

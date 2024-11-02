@@ -28,7 +28,7 @@ def get_files(file_id = None,datum_id = None,category = None):
         params = {"datum_id": datum_id}       
 
     elif category: 
-        query = text("SELECT * FROM mzkh_files WHERE type = :category")
+        query = text("SELECT * FROM mzkh_files WHERE category = :category")
         params = {"category": category}       
     else:
         query = text("SELECT * FROM mzkh_files ORDER BY id")
@@ -42,10 +42,10 @@ def get_files(file_id = None,datum_id = None,category = None):
     return df
 
 def get_file_by_id(file_id):
-    return get_files(file_id)
+    return get_files(file_id = file_id)
 
 def get_files_by_category(category):
-    return get_files(category)
+    return get_files(category = category)
 
 def merge_files(conn,params):
     keys_needed_params = ["id", "id_datum", "name", "file_type", "file_size", "user_name", "category", "dt"]
