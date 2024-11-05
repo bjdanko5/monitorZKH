@@ -71,7 +71,10 @@ with Вкладки_container:
     #subsystem_code = "Паспорт_МКД"
     #st.session_state.selected_subsystem_id = int(subsystems_db.get_subsystem_by_code(subsystem_code=subsystem_code)["id"][0])
     #st.session_state.selected_subsystem_name = subsystems_db.get_subsystem_by_code(subsystem_code=subsystem_code)["name"][0]
-    df_Вкладки = datums_db.get_datums_Вкладки(subsystem_id = st.session_state.selected_subsystem_id)
+    subsystem_id = st.session_state.get("selected_subsystem_id",None)
+
+        
+    df_Вкладки = datums_db.get_datums_Вкладки(subsystem_id = subsystem_id)
     if df_Вкладки.empty:          
         if st.session_state.get("saved_Вкладка",None):
             del st.session_state.saved_Вкладка 

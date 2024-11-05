@@ -163,13 +163,14 @@ def ФайлыПоказателя(datum_id,datum_type_id,datum_type_code,datum_
     for uploaded_file in uploaded_files:
         file_data  = uploaded_file.getvalue()
        
-        url = 'http://192.168.10.130:8080/upload'
+        #url = 'http://192.168.10.130:8080/upload'
+        base_url = st.session_state.base_url_upload
 
         # Отправка POST запроса с файлом
         files = {'uploads': (uploaded_file.name, file_data, 'application/octet-stream')
                  ,'path': str(datum_id)}
         
-        response = requests.post(url, files=files)
+        response = requests.post(base_url, files=files)
         
         # Проверка статуса ответа
         if response.status_code == 200:

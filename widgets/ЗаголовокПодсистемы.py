@@ -8,11 +8,22 @@ except ImportError as e:
 def ЗаголовокПодсистемы():
     if "selected_house_objectid" not in st.session_state:
         st.switch_page("pages/Поиск_Дома.py")
-    col1, col2 = st.columns([1, 5])
-    with col1:
-        КнопкаДругойДом.КнопкаДругойДом()
-    with col2:
+    if st.session_state.selected_house_objectid != 0:
+        col1, col2 = st.columns([1, 5])
+        with col1:
+            КнопкаДругойДом.КнопкаДругойДом()
+        with col2:
+            
+            house_df = hierarchy_db.get_house(st.session_state["selected_house_objectid"])
+            st.subheader(hierarchy_db.format_address(house_df))
+        utils.subsystem_menu(without_settings = True)
+    else:
+        subsystem_id = st.session_state.get("selected_subsystem_id",None) 
+        if subsystem_id == None:
+            if st.session_state.selected_house_objectid == 0:
+               del st.session_state.selected_house_objectid
+               st.switch_page("pages/Поиск_Дома.py")
+
+        utils.subsystem_menu(subsystem_id = subsystem_id)       
         
-        house_df = hierarchy_db.get_house(st.session_state["selected_house_objectid"])
-        st.subheader(hierarchy_db.format_address(house_df))
-    utils.subsystem_menu()
+        

@@ -176,4 +176,6 @@ def ВыборДома(street_objectid):
     selection_mode="single-row",
     key="event_houses_df")
     if "selected_house_objectid" in st.session_state:
+        if "selected_subsystem_id" in st.session_state:
+            del st.session_state.selected_subsystem_id
         st.switch_page("pages/Мониторинг.py")

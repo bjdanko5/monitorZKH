@@ -11,8 +11,8 @@ def custom_sort(item, saved_Подсистема):
     else:
         return 1  # Остальные элементы
 
-def subsystem_menu():
-    subsystems_df = subsystems_db.get_subsystems()
+def subsystem_menu(subsystem_id=None, without_settings = False):
+    subsystems_df = subsystems_db.get_subsystems(subsystem_id = subsystem_id,without_settings = without_settings)
     data = [
     stx.TabBarItemData(id=int(row['id']), title=row['name'], description="Подсистема")
     for index, row in subsystems_df.iterrows()
