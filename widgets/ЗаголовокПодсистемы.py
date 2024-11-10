@@ -22,7 +22,7 @@ def ЗаголовокПодсистемы():
         if subsystem_id == None:
             if st.session_state.selected_house_objectid == 0:
                del st.session_state.selected_house_objectid
-               st.switch_page("pages/Поиск_Дома.py")
+               st.switch_page("pages/Поиск_Дома.py")        
 
         utils.subsystem_menu(subsystem_id = subsystem_id)       
         

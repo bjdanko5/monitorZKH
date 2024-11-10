@@ -1,10 +1,10 @@
 #FROM python:3.10.12-alpine
-FROM ubuntu:22.04
+FROM python:3.10-slim-bookworm
 #FROM localhost:5000/monitorzkh:latest
 #FROM mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04
 RUN apt update
-RUN apt install -y python3.13 python3-pip
-RUN pip3 install --upgrade pip
+#RUN apt install -y python3.10 python3-pip
+#RUN pip3 install --upgrade pip
 RUN pip3 install logtail-python
 
 WORKDIR /var/www/html/monitorZKH

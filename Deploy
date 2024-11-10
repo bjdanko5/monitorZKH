@@ -2,7 +2,7 @@
 
 # Перейти в директорию /var/www/html/monitorZKH
 echo "Переход в директорию /var/www/html/monitorZKH... $(date)"
-cd /var/www/html/monitorZKH
+cd /var/www/html/monitorZKH.ю
 
 # Собрать образ Docker с тегом monitorzkh:latest, используя файл Dockerfile_monitorzkh, без кэша
 echo "Сборка образа Docker monitorzkh:latest... $(date)"
