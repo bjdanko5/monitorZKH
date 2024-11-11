@@ -15,12 +15,12 @@ def get_datum_values(id_houses_objectid,subsystem_name=None, subsystem_id=None, 
        dt.code AS datum_type_code
       ,e.name  AS edizm_name
       ,v.id AS id_datum_values
-      ,ISNULL(v.int_value,0) AS int_value
-      ,ISNULL(v.float_value,0) AS float_value
+      ,COALESCE(v.int_value,0) AS int_value
+      ,COALESCE(v.float_value,0) AS float_value
       ,v.date_value AS date_value
-      ,ISNULL(v.nvarchar_value,'') AS nvarchar_value
+      ,COALESCE(v.nvarchar_value,'') AS nvarchar_value
       ,v.id_table_value AS id_table_value
-      ,ISNULL(v.id_houses_objectid,v.id_unlinked_houses_id) AS id_houses_objectid
+      ,COALESCE(v.id_houses_objectid,v.id_unlinked_houses_id) AS id_houses_objectid
         FROM mzkh_datums d
         LEFT JOIN mzkh_datum_values v ON  d.id = v.id_datum
         AND :id_houses_objectid = v.id_houses_objectid
@@ -35,13 +35,15 @@ def get_datum_values(id_houses_objectid,subsystem_name=None, subsystem_id=None, 
         AND (:id_lvl1 IS NULL OR d.id_lvl1 = :id_lvl1)
         AND (:id_lvl2 IS NULL OR d.id_lvl2 = :id_lvl2)
         AND (:id_lvl3 IS NULL OR d.id_lvl3 = :id_lvl3)
-        AND (:mode='all' OR :mode='one' AND (:selected_datum_id = v.id_datum))
-        
-        ORDER BY CASE
-        WHEN TRY_CONVERT(INT, REPLACE(d.code, '.', '')) IS NOT NULL
-        THEN TRY_CONVERT(INT, REPLACE(d.code, '.', ''))
-        ELSE 9999999
-        END,d.code
+        AND (:mode='all' OR :mode='one' AND (:selected_datum_id = v.id_datum))       
+        ORDER BY 
+        CASE 
+            WHEN d.code ~ '^[0-9.]+$' THEN CAST(REPLACE(d.code, '.', '') AS INT) 
+            ELSE 9999999 
+        END,
+        d.code
+    
+
     """
     #AND (:datum_parent_id IS NULL OR parent_id = :datum_parent_id)
     params = {
@@ -79,12 +81,12 @@ def get_datum_value(id_houses_objectid,selected_datum_id):
        dt.code AS datum_type_code
       ,e.name  AS edizm_name
       ,v.id AS id_datum_values
-      ,ISNULL(v.int_value,0) AS int_value
-      ,ISNULL(v.float_value,0) AS float_value
+      ,COALESCE(v.int_value,0) AS int_value
+      ,COALESCE(v.float_value,0) AS float_value
       ,v.date_value AS date_value
-      ,ISNULL(v.nvarchar_value,'') AS nvarchar_value
+      ,COALESCE(v.nvarchar_value,'') AS nvarchar_value
       ,v.id_table_value AS id_table_value
-      ,ISNULL(v.id_houses_objectid,v.id_unlinked_houses_id) AS id_houses_objectid
+      ,COALESCE(v.id_houses_objectid,v.id_unlinked_houses_id) AS id_houses_objectid
         FROM mzkh_datums d
         LEFT JOIN mzkh_datum_values v ON  d.id = v.id_datum
         AND :id_houses_objectid = v.id_houses_objectid

@@ -78,7 +78,7 @@ def get_houses(parentobjid):
 def get_house(objectid):
     conn = st.session_state["conn"]
     query = """
-            select
+  select
 			hp.value            as post_index,
 			hier5_ns.NAME       as hier5_name,
             hier5_ns.TYPENAME   as hier5_typename,
@@ -103,8 +103,14 @@ def get_house(objectid):
 			hier3.OBJECTID  as hier3_objectid,
 			hier4.OBJECTID  as hier4_objectid
 
-            from ADMHIERARCHY hier_street
-
+            from HOUSES h
+			
+			join ADMHIERARCHY hier_house
+            on hier_house.OBJECTID = h.OBJECTID  
+			
+			join ADMHIERARCHY hier_street 
+			on hier_street.OBJECTID = hier_house.PARENTOBJID
+			
 			join ADMHIERARCHY hier1
 			on hier1.OBJECTID = hier_street.PARENTOBJID
 
@@ -140,15 +146,10 @@ def get_house(objectid):
 			join namespace as street_ns
             on hier_street.OBJECTID = street_ns.OBJECTID
 
-			join ADMHIERARCHY hier_house
-			on hier_street.OBJECTID = hier_house.PARENTOBJID
-            
-			join HOUSES h
-            on hier_house.OBJECTID = h.OBJECTID  
             left join HOUSESPARAMS hp
 			on hp.OBJECTID = h.OBJECTID 
                and hp.TYPEID = 5
-			   and hp.ENDDATE >getdate()
+			   and hp.ENDDATE >now()
 
             where  h.OBJECTID = :objectid
             and hier_street.isactive = 1
@@ -156,6 +157,7 @@ def get_house(objectid):
 			and h.isactive = 1
             order by
             street_ns.name,h.housenum
+
 
             """
     params = {"objectid": objectid}

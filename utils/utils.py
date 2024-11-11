@@ -70,7 +70,50 @@ def exit_user():
 
 def alltrim(s):
     return s.strip()
+def init_pg_connection():    
+    engine,conn,error_message = None,None,None
+    from sqlalchemy.engine import URL
+    from sqlalchemy import create_engine
+    try:
+        #connection_url = f"postgresql://postgres:Neodog2020@192.168.10.21/mzkh"
+        pg_username = st.secrets["pg_username"]
+        pg_password = st.secrets["pg_password"]
+        pg_server   = st.secrets["pg_server"]
+        pg_database   = st.secrets["pg_database"]
 
+        connection_url = f"postgresql://{pg_username}:{pg_password}@{pg_server}/{pg_database}"
+        engine = create_engine(connection_url)
+        conn = engine.connect()
+    except Exception as e:
+        error_message = str(e)
+    return engine,conn,error_message
+def get_pg_conn_status():
+    if "conn" in st.session_state and st.session_state["conn"] is not None:
+        pg_conn = st.session_state["conn"]
+        st.session_state["conn"] =pg_conn
+        engine = st.session_state["engine"]
+        st.session_state["engine"] = engine
+        return pg_conn 
+    with st.status("Устанавливается подключение к базе данных...", state="running", expanded=True) as status:
+        st.write("Ожидайте...")
+        st.session_state["engine"],st.session_state["conn"],error_message = init_pg_connection()
+        if st.session_state.get("conn") is None:
+            if "password_correct" in st.session_state:
+                del st.session_state["password_correct"]
+            status.update(label="Не удалось подключиться к базе данных.",state="error", expanded=True)
+            st.write("Cообщение от сервера:")
+            st.write(error_message)   
+            st.write("Выполнен Выход пользователя из Монитора ЖКХ.")   
+            if st.button("Войти ещё раз"):
+                st.switch_page("Монитор_ЖКХ.py") 
+            st.stop()   
+        else:        
+            conn = st.session_state["conn"]
+            st.session_state["conn"] = conn
+            status.update(label="Подключение к базе данных выполнено.",state="complete", expanded=True)   
+            st.write("Можно работать...")
+    status.update(label="БД подключена",state="complete", expanded=False)
+    return conn 
 def init_connection():    
     engine,conn,error_message = None,None,None
     from sqlalchemy.engine import URL
@@ -125,6 +168,8 @@ def auth_check():
         #else:   
             #auth_menu()  
 def get_conn_status():
+    conn = get_pg_conn_status()
+    return conn
     if "conn" in st.session_state and st.session_state["conn"] is not None:
         conn = st.session_state["conn"]
         st.session_state["conn"] =conn
@@ -154,6 +199,6 @@ def get_conn_status():
     return conn 
 def conn_and_auth_check():
     auth_check()
-    conn = get_conn_status()
+    conn = get_pg_conn_status()
     return conn
                
