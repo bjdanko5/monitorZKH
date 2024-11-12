@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from sqlalchemy import text
 from sqlalchemy.exc import PendingRollbackError
+from psycopg2 import   DatabaseError
 def get_subsystems_Выбор(subsystem_id = None,subsystem_code = None):  
     df = get_subsystems(subsystem_id = subsystem_id,subsystem_code = subsystem_code)
     df = df[['id','name']]
@@ -30,7 +31,13 @@ def get_subsystems(subsystem_id = None,subsystem_code = None,subsystem_name = No
     except PendingRollbackError:
         conn.rollback()  # Полный откат транзакции
         result = conn.execute(text(query), params)
-    
+    except (Exception, DatabaseError) as error :    
+        conn.rollback()
+        result = conn.execute(text(query), params)
+    #finally:
+    #    if conn:
+    #       conn.close()
+            #print("Соединение с PostgreSQL закрыто")
     
 
     rows = result.fetchall()

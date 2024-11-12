@@ -4,6 +4,7 @@ from sqlalchemy.exc import PendingRollbackError
 from sqlalchemy import text
 import numpy as np
 import math
+from datetime import datetime
 def prepare_int(i):
     return i if i is None else int(i)
 def get_datum_values(id_houses_objectid,subsystem_name=None, subsystem_id=None, subsystem_code=None, datum_parent_id=None,datum_lvl=None,datum_id_lvl=None,mode = None,selected_datum_id = None):
@@ -94,11 +95,12 @@ def get_datum_value(id_houses_objectid,selected_datum_id):
         LEFT JOIN mzkh_datum_types dt ON d.id_datum_type = dt.id
         LEFT JOIN mzkh_edizms e ON d.id_edizm = e.id
         WHERE :selected_datum_id = v.id_datum
-        ORDER BY CASE
-        WHEN TRY_CONVERT(INT, REPLACE(d.code, '.', '')) IS NOT NULL
-        THEN TRY_CONVERT(INT, REPLACE(d.code, '.', ''))
-        ELSE 9999999
-        END,d.code
+        ORDER BY 
+        CASE 
+            WHEN d.code ~ '^[0-9.]+$' THEN CAST(REPLACE(d.code, '.', '') AS INT) 
+            ELSE 9999999 
+        END,
+        d.code
     """
     #AND (:datum_parent_id IS NULL OR parent_id = :datum_parent_id)
     params = {
@@ -119,25 +121,39 @@ def get_datum_value(id_houses_objectid,selected_datum_id):
     return df
 
 def merge_datum_values_values(conn,params):
+    #if params["date_value"] == None:
+    #    params["date_value"] = datetime.now() 
+    #if params["id_table_value"] == None:
+    #    params["id_table_value"] = 0 
+      
     #keys_params = ['id', 'name', 'id_subsystem', 'subsystem_name', 'id_datum_type', 'datum_type_name','datum_type_code', 'code', 'fullname', 'parent_id', 'page', 'id_edizm','lvl','id_lvl0','id_lvl1','id_lvl2','id_lvl3','id_datum_values','int_value','float_value','date_value','nvarchar_value','id_table_value','id_houses_objectid']
     keys_needed_params=['id_datum_values', 'id_datum', 'int_value', 'float_value','date_value','nvarchar_value','id_table_value','id_houses_objectid','id_unlinked_houses_id']
     
     params['id_datum'] = params['id']
-
+    
     params = {
         key: int(value) if isinstance(value, np.int64) else "Не задано" if value in [None, ""] and isinstance(value, str) else value
         for key, value in params.items() if key in keys_needed_params
     }
-
+    if params['int_value'] == True:
+       params['int_value'] = 1
+    else:    
+       params['int_value'] = 0
     params['id'] = params.pop('id_datum_values') if 'id_datum_values' in params else params.get('id_datum_values')
     #params['id'] = params.pop('id_datum_values', params.get('id_datum_values'))
     params['id_unlinked_houses_id'] = None
 
     params = {key: None if isinstance(value, float) and math.isnan(value) else value for key, value in params.items()}
-   
+    print("Parameters being passed to the query:")
+    for key, value in params.items():
+        print(f"{key}: {value} (type: {type(value)})")
     merge_query =   """   
                     MERGE INTO mzkh_datum_values AS target
-                    USING (VALUES (:id, :id_datum, :int_value, :float_value, :date_value, :nvarchar_value, :id_table_value, :id_houses_objectid, :id_unlinked_houses_id)) 
+                    USING (SELECT :id AS id, :id_datum AS id_datum, :int_value AS int_value, 
+                           :float_value AS float_value, :date_value AS date_value, 
+                           :nvarchar_value AS nvarchar_value, :id_table_value AS id_table_value, 
+                           :id_houses_objectid AS id_houses_objectid, 
+                           :id_unlinked_houses_id AS id_unlinked_houses_id) 
                     AS source 
                     (id, id_datum, int_value, float_value, date_value, nvarchar_value, id_table_value, id_houses_objectid, id_unlinked_houses_id)
                     ON target.id_datum = source.id_datum
@@ -147,20 +163,20 @@ def merge_datum_values_values(conn,params):
                             id_datum = source.id_datum,
                             int_value = source.int_value,
                             float_value = source.float_value,
-                            date_value = source.date_value,
+                            date_value = cast(source.date_value as date),
                             nvarchar_value = source.nvarchar_value,
-                            id_table_value = source.id_table_value,
+                            id_table_value = cast(source.id_table_value as bigint),
                             id_houses_objectid = source.id_houses_objectid,
-                            id_unlinked_houses_id = source.id_unlinked_houses_id
+                            id_unlinked_houses_id = cast(source.id_unlinked_houses_id as bigint)
                     WHEN NOT MATCHED THEN
                         INSERT (id_datum, int_value, float_value, date_value, nvarchar_value, id_table_value, id_houses_objectid, id_unlinked_houses_id)
                         --OUTPUT Inserted.ID
-                        VALUES (source.id_datum, source.int_value, source.float_value, source.date_value, source.nvarchar_value, source.id_table_value, source.id_houses_objectid, source.id_unlinked_houses_id);
+                        VALUES (source.id_datum, source.int_value, source.float_value, cast(source.date_value as date), source.nvarchar_value, cast(source.id_table_value as bigint), source.id_houses_objectid, cast(source.id_unlinked_houses_id as bigint));
                     """
 
     try:
         result = conn.execute(text(merge_query), params)
-    except PendingRollbackError:
+    except :
         conn.rollback()  # Полный откат транзакции
         result = conn.execute(text(merge_query), params)
     #row = result.fetchone()

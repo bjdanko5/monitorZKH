@@ -88,7 +88,6 @@ def add_option_dict(params):
                    float_value,
                    date_value,
                    nvarchar_value)
-        OUTPUT Inserted.ID
         VALUES (
                    :id_datum,
                    :name,
@@ -96,6 +95,7 @@ def add_option_dict(params):
                    :float_value,
                    :date_value,
                    :nvarchar_value)
+        RETURNING id;           
     """
     result = conn.execute(text(insert_query), params)
     new_record_id = result.fetchone()[0]

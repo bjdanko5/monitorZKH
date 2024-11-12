@@ -91,8 +91,8 @@ def add_datum_dict(params):
     conn = st.session_state["conn"]
     insert_query = """
         INSERT INTO mzkh_datums (name, code, fullname, id_subsystem, id_datum_type, parent_id, page, id_edizm)
-        OUTPUT Inserted.ID
         VALUES (:name, :code, :fullname, :id_subsystem, :id_datum_type, :parent_id, :page, :id_edizm)
+        RETURNING id;
     """
     result = conn.execute(text(insert_query), params)
     new_record_id = result.fetchone()[0]
