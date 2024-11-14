@@ -2,7 +2,8 @@
 #FROM ubuntu:22.04
 FROM localhost:5000/monitorzkh:latest
 #FROM mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04
-RUN pip install extra_streamlit_components
+#RUN pip install extra_streamlit_components
+#RUN pip install psycopg2-binary
 WORKDIR /var/www/html/monitorZKH
 RUN  rm -rf unwanted-files
 COPY . /var/www/html/monitorZKH

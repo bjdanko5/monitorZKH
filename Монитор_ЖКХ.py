@@ -81,6 +81,7 @@ def menu():
     
     adm_pages = {
         "Администраторам": [
+            st.Page("pages/ЗагрузкаПоказателей.py", title="Загрузка Показателей", icon = ":material/dns:"),
             st.Page("pages/Настройки.py", title="Настройки", icon = ":material/dns:"),
             st.Page("pages/Пользователи.py", title="Пользователи", icon = ":material/group:"),   
             st.Page("pages/Организации.py", title="Организации", icon = ":material/source_environment:"),   

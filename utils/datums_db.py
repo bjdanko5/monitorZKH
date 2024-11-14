@@ -30,11 +30,11 @@ def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datu
         AND (:id_lvl2 IS NULL OR id_lvl2 = :id_lvl2)
         AND (:id_lvl3 IS NULL OR id_lvl3 = :id_lvl3)
         ORDER BY 
-        CASE 
-        WHEN d.code ~ '^[0-9.]+$' THEN CAST(REPLACE(d.code, '.', '') AS INT) 
-        ELSE 9999999 
-        END,
-        d.code
+         CASE 
+            WHEN d.code ~ '^[0-9]+(\.[0-9]+)*$' THEN string_to_array(d.code, '.')::int[]
+            ELSE string_to_array('0', '.')::int[] 
+        END    
+
     """
     #AND (:datum_parent_id IS NULL OR parent_id = :datum_parent_id)
     params = {

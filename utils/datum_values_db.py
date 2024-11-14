@@ -39,11 +39,9 @@ def get_datum_values(id_houses_objectid,subsystem_name=None, subsystem_id=None, 
         AND (:mode='all' OR :mode='one' AND (:selected_datum_id = v.id_datum))       
         ORDER BY 
         CASE 
-            WHEN d.code ~ '^[0-9.]+$' THEN CAST(REPLACE(d.code, '.', '') AS INT) 
-            ELSE 9999999 
-        END,
-        d.code
-    
+            WHEN d.code ~ '^[0-9]+(\.[0-9]+)*$' THEN string_to_array(d.code, '.')::int[]
+            ELSE string_to_array('0', '.')::int[] 
+        END    
 
     """
     #AND (:datum_parent_id IS NULL OR parent_id = :datum_parent_id)
@@ -96,11 +94,11 @@ def get_datum_value(id_houses_objectid,selected_datum_id):
         LEFT JOIN mzkh_edizms e ON d.id_edizm = e.id
         WHERE :selected_datum_id = v.id_datum
         ORDER BY 
-        CASE 
-            WHEN d.code ~ '^[0-9.]+$' THEN CAST(REPLACE(d.code, '.', '') AS INT) 
-            ELSE 9999999 
-        END,
-        d.code
+         CASE 
+            WHEN d.code ~ '^[0-9]+(\.[0-9]+)*$' THEN string_to_array(d.code, '.')::int[]
+            ELSE string_to_array('0', '.')::int[] 
+        END    
+
     """
     #AND (:datum_parent_id IS NULL OR parent_id = :datum_parent_id)
     params = {

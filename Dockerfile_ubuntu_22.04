@@ -3,9 +3,10 @@ FROM ubuntu:22.04
 #FROM localhost:5000/monitorzkh:latest
 #FROM mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04
 RUN apt update
-RUN apt install -y python3.13 python3-pip
-RUN pip3 install --upgrade pip
-RUN pip3 install logtail-python
+RUN apt install -y python3.12 python3-pip
+RUN pip install --upgrade pip
+RUN pip install logtail-python
+RUN pip install psycopg2-binary
 
 WORKDIR /var/www/html/monitorZKH
 
