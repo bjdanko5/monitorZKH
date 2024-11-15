@@ -131,8 +131,9 @@ def update_option_dict(params,original_row):
     #update_option_level(conn,params,params["id"])
     conn.commit()
 def delete_option(option_id):
-    conn = st.session_state["conn"]
+    engine = st.session_state["engine"]
+    conn = engine.connect()  
     query = "DELETE FROM mzkh_options WHERE id = :option_id"
     conn.execute(text(query), {"option_id": option_id})
     conn.commit()
-   
+    conn.close()   

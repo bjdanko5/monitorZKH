@@ -6,7 +6,8 @@ def get_orgs_Выбор(role_name = None):
     df = df[["id","name"]]
     return df
 def get_orgs(role_name = None):
-    conn = st.session_state["conn"]
+    engine = st.session_state["engine"]
+    conn = engine.connect()  
     if  role_name:
         query = """
         SELECT 
@@ -45,21 +46,29 @@ def get_orgs(role_name = None):
         df = pd.DataFrame(rows)
     else:  
         df = pd.DataFrame(columns=['id', 'name', 'id_role', 'role_name'])
+    conn.commit()    
+    conn.close()
     return df
 
 def add_org(name,id_role):
-    conn = st.session_state["conn"]
+    engine = st.session_state["engine"]
+    conn = engine.connect()  
     query = "INSERT INTO mzkh_orgs (name,id_role) VALUES (:name, :id_role)"
     conn.execute(text(query), {"name": name, "id_role": id_role})
     conn.commit()
+    conn.close()
 def update_org(org_id, name,id_role):
-    conn = st.session_state["conn"]
+    engine = st.session_state["engine"]
+    conn = engine.connect()  
     query = "UPDATE mzkh_orgs SET name = :name, id_role = :id_role WHERE id = :org_id"
     conn.execute(text(query), {"name": name, "org_id": org_id, "id_role": id_role})
     conn.commit()
+    conn.close()
 def delete_org(org_id):
+    engine = st.session_state["engine"]
+    conn = engine.connect()      
     conn = st.session_state["conn"]
     query = "DELETE FROM mzkh_orgs WHERE id = :org_id"
     conn.execute(text(query), {"org_id": org_id})
     conn.commit()
-   
+    conn.close()

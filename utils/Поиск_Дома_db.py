@@ -6,7 +6,9 @@ except ImportError as e:
 import pandas as pd
 from sqlalchemy import text 
 def get_hierarchy(level,parentobjid):
-    conn = st.session_state["conn"]
+    engine = st.session_state["engine"]
+    conn = engine.connect()  
+
     query = """
             select 
                     a.OBJECTID    as objectid,
@@ -35,10 +37,13 @@ def get_hierarchy(level,parentobjid):
         df = pd.DataFrame(rows)
     else:  
         df = pd.DataFrame(columns=["objectid", "name", "typename", "level", "parentobjid", "house_objectid", "housenum", "addnum1", "addnum2"])
+    conn.commit()
+    conn.close()    
     return df
 
 def get_houses(parentobjid):
-    conn = st.session_state["conn"]
+    engine = st.session_state["engine"]
+    conn = engine.connect()  
     query = """
             select
             street_ns.NAME       as street_name,
@@ -74,9 +79,12 @@ def get_houses(parentobjid):
         df = pd.DataFrame(rows)
     else:  
         df = pd.DataFrame(columns=["street_name", "street_typename", "housenum", "addnum1", "addnum2", "house_objectid", "street_objectid", "street_parentobjid"])
+    conn.commit()    
+    conn.close()
     return df
 def get_house(objectid):
-    conn = st.session_state["conn"]
+    engine = st.session_state["engine"]
+    conn = engine.connect()  
     query = """
   select
 			hp.value            as post_index,
@@ -171,6 +179,8 @@ def get_house(objectid):
                                    "hier1_name", "hier1_typename", "street_name", "street_typename", 
                                    "housenum", "addnum1", "addnum2","house_objectid", "street_objectid", 
                                    "hier1_objectid", "hier2_objectid","hier3_objectid", "hier4_objectid"])
+    conn.commit()
+    conn.close()
     return df
 
 def format_address(df):

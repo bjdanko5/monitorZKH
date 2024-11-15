@@ -4,8 +4,9 @@ from sqlalchemy import text
 import numpy as np
 import math
 def get_file(file_name,datum_id):
-    conn = st.session_state["conn"]
     engine = st.session_state["engine"]
+    conn = engine.connect()
+
     query = text("SELECT * FROM mzkh_files WHERE name = :file_name and id_datum=:datum_id")
     params = {"file_name": file_name,
               "datum_id": datum_id,
@@ -16,10 +17,12 @@ def get_file(file_name,datum_id):
         df = pd.DataFrame(rows)
     else:  
         df = pd.DataFrame(columns=["id", "id_datum", "name", "file_type", "file_size", "user_name", "category", "dt"])
+    conn.commit()    
+    conn.close()
     return df 
 def get_files(file_id = None,datum_id = None,category = None):
-    conn = st.session_state["conn"]
     engine = st.session_state["engine"]
+    conn = engine.connect()
     if file_id:
         query = text("SELECT * FROM mzkh_files WHERE id = :file_id")
         params = {"file_id": file_id}       
@@ -39,6 +42,8 @@ def get_files(file_id = None,datum_id = None,category = None):
         df = pd.DataFrame(rows)
     else:  
         df = pd.DataFrame(columns=["id", "id_datum", "name", "file_type", "file_size", "user_name", "category", "dt"])
+    conn.commit()
+    conn.close()
     return df
 
 def get_file_by_id(file_id):
@@ -48,6 +53,8 @@ def get_files_by_category(category):
     return get_files(category = category)
 
 def merge_files(conn,params):
+    engine = st.session_state["engine"]
+    conn = engine.connect()  
     keys_needed_params = ["id", "id_datum", "name", "file_type", "file_size", "user_name", "category", "dt"]
     params = {
         key: int(value) if isinstance(value, np.int64) else "Не задано" if value in [None, ""] and isinstance(value, str) else value
@@ -75,10 +82,11 @@ def merge_files(conn,params):
                     """
     result = conn.execute(text(merge_query), params)
     conn.commit()
-    
+    conn.close()
 def delete_file(file_id):
-    conn = st.session_state["conn"]
+    engine = st.session_state["engine"]
+    conn = engine.connect()  
     query = "DELETE FROM mzkh_files WHERE id = :file_id"
     conn.execute(text(query), {"file_id": file_id})
     conn.commit()
-   
+    conn.close()

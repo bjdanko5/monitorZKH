@@ -123,7 +123,7 @@ with Вкладки_container:
                     pass
                     #st.page_link(f"pages/Показатели.py?selected_house_objectid={selected_house_objectid}&datum_code={row['code']}", label=f"Изменить", icon=":material/assignment_ind:")                    
                 with col2: 
-                    st.markdown(f"  ### {spaces} {row['code']} {row['name']}", unsafe_allow_html=True)    
+                    st.markdown(f"  ### {spaces} {row['code']} {row['fullname']}", unsafe_allow_html=True)    
                 
                     #st.checkbox("", value=False, key=row['code'])
                     sub_c = st.container()

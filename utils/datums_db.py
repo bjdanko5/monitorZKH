@@ -13,8 +13,10 @@ def get_datums_Выбор(subsystem_name=None, subsystem_id=None, subsystem_code
     df = get_datums(subsystem_name=subsystem_name, subsystem_id=subsystem_id, subsystem_code=subsystem_code, datum_parent_id=datum_parent_id)
     df = df[['id',"code","name","fullname","parent_id","id_subsystem"]]
     return df
-def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datum_parent_id=None,datum_lvl=None,datum_id_lvl=None,mode = None,datum_id = None,datum_code = None,datum_name = None):
-    conn = st.session_state["conn"]    
+def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datum_parent_id=None,datum_lvl=None,datum_id_lvl=None,mode = None,datum_id = None,datum_code = None,datum_name = None):    
+    engine = st.session_state["engine"]
+    conn = engine.connect()
+  
     query = """
         SELECT d.*, s.name AS subsystem_name, dt.name AS datum_type_name,e.name AS edizm_name
         FROM mzkh_datums d
@@ -65,9 +67,13 @@ def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datu
     else:
         columns = ['id', 'name', 'id_subsystem', 'subsystem_name', 'id_datum_type', 'datum_type_name', "code", "fullname", "parent_id", "page", "id_edizm","lvl","id_lvl0","id_lvl1","id_lvl2","id_lvl3","edizm_name"]
         df = pd.DataFrame(columns=columns)
-    
+    conn.commit()
+    conn.close()
     return df
-def update_datum_level(conn,params,new_record_id):
+def update_datum_level(params,new_record_id):
+    engine = st.session_state["engine"]
+    conn = engine.connect()
+
     params["lvl"], params["id_lvl0"], params["id_lvl1"], params["id_lvl2"], params["id_lvl3"] = st.session_state.datumsParentStack.get_lvl(new_record_id)
     update_query = """
                    UPDATE mzkh_datums
@@ -80,9 +86,11 @@ def update_datum_level(conn,params,new_record_id):
                    WHERE id = :id
                 """
     conn.execute(text(update_query), {"id": new_record_id, "lvl": params["lvl"], "id_lvl0": params["id_lvl0"], "id_lvl1": params["id_lvl1"], "id_lvl2": params["id_lvl2"], "id_lvl3": params["id_lvl3"]})
-
+    conn.commit()
+    conn.close()
 def add_datum_dict(params):
-    
+    engine = st.session_state["engine"]
+    conn = engine.connect()
     params.pop("subsystem_name", None)
     params.pop("datum_type_name", None)
     
@@ -94,7 +102,6 @@ def add_datum_dict(params):
     }
     params["page"] = "pages/" + params["code"] + ".py"
 
-    conn = st.session_state["conn"]
     insert_query = """
         INSERT INTO mzkh_datums (name, code, fullname, id_subsystem, id_datum_type, parent_id, page, id_edizm)
         VALUES (:name, :code, :fullname, :id_subsystem, :id_datum_type, :parent_id, :page, :id_edizm)
@@ -102,11 +109,13 @@ def add_datum_dict(params):
     """
     result = conn.execute(text(insert_query), params)
     new_record_id = result.fetchone()[0]
-    update_datum_level(conn,params,new_record_id)
     conn.commit()
+    conn.close() 
+    update_datum_level(params,new_record_id)
 
 def update_datum_dict(params,original_row):    
- 
+    engine = st.session_state["engine"]
+    conn = engine.connect()
     params.update({key: value for key, value in original_row.items() if key not in params})
     params.pop("subsystem_name", None)
     params.pop("datum_type_name", None)
@@ -119,7 +128,6 @@ def update_datum_dict(params,original_row):
     }
     params["page"] = "pages/" + params["code"] + ".py"
 
-    conn = st.session_state["conn"]
     query = """
         UPDATE mzkh_datums
         SET
@@ -134,11 +142,16 @@ def update_datum_dict(params,original_row):
         WHERE id = :id
     """
     conn.execute(text(query), params)
-    update_datum_level(conn,params,params["id"])
     conn.commit()
+    conn.close()
+    update_datum_level(params,params["id"])
+
 def delete_datum(datum_id):
+    engine = st.session_state["engine"]
+    conn = engine.connect()
     conn = st.session_state["conn"]
     query = "DELETE FROM mzkh_datums WHERE id = :datum_id"
     conn.execute(text(query), {"datum_id": datum_id})
     conn.commit()
+    conn.close()
    

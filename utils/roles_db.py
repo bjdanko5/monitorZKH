@@ -3,8 +3,9 @@ import pandas as pd
 from sqlalchemy import text
   
 def get_roles(target=None):
-    conn = st.session_state["conn"]
     engine = st.session_state["engine"]
+    conn = engine.connect()  
+
     if target:
         query = text("SELECT * FROM mzkh_roles WHERE target = :target")
         params = {"target": target}
@@ -18,20 +19,30 @@ def get_roles(target=None):
         df = pd.DataFrame(rows)
     else:  
         df = pd.DataFrame(columns=['id', 'name', 'target'])
+    conn.commit()    
+    conn.close()
     return df
 def add_role(name, target):
-    conn = st.session_state["conn"]
+    engine = st.session_state["engine"]
+    conn = engine.connect()  
+
     query = "INSERT INTO mzkh_roles (name,target) VALUES (:name, :target)"
     conn.execute(text(query), {"name": name, "target": target})
     conn.commit()
+    conn.close()
 def update_role(role_id, name, target):
-    conn = st.session_state["conn"]
+    engine = st.session_state["engine"]
+    conn = engine.connect()  
     query = "UPDATE mzkh_roles SET name = :name, target = :target WHERE id = :role_id"
     conn.execute(text(query), {"name": name, "role_id": role_id, "target": target})
     conn.commit()
+    conn.close()
 def delete_role(role_id):
-    conn = st.session_state["conn"]
+    engine = st.session_state["engine"]
+    conn = engine.connect()  
     query = "DELETE FROM mzkh_roles WHERE id = :role_id"
     conn.execute(text(query), {"role_id": role_id})
     conn.commit()
+    conn.close()
+    
    

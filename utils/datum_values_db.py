@@ -8,7 +8,8 @@ from datetime import datetime
 def prepare_int(i):
     return i if i is None else int(i)
 def get_datum_values(id_houses_objectid,subsystem_name=None, subsystem_id=None, subsystem_code=None, datum_parent_id=None,datum_lvl=None,datum_id_lvl=None,mode = None,selected_datum_id = None):
-    conn = st.session_state["conn"]    
+    engine = st.session_state["engine"]
+    conn = engine.connect()
     query = """
        SELECT d.*, 
        s.name AS subsystem_name,
@@ -69,10 +70,12 @@ def get_datum_values(id_houses_objectid,subsystem_name=None, subsystem_id=None, 
     else:
         columns = ['id', 'name', 'id_subsystem', 'subsystem_name', 'id_datum_type', 'datum_type_name','datum_type_code', 'code', 'fullname', 'parent_id', 'page', 'id_edizm','lvl','id_lvl0','id_lvl1','id_lvl2','id_lvl3','id_datum_values','int_value','float_value','date_value','nvarchar_value','id_table_value','id_houses_objectid']
         df = pd.DataFrame(columns=columns)
-    
+    conn.commit()
+    conn.close()
     return df
 def get_datum_value(id_houses_objectid,selected_datum_id):
-    conn = st.session_state["conn"]    
+    engine = st.session_state["engine"]
+    conn = engine.connect()
     query = """
        SELECT d.*, 
        s.name AS subsystem_name,
@@ -115,7 +118,8 @@ def get_datum_value(id_houses_objectid,selected_datum_id):
     else:
         columns = ['id', 'name', 'id_subsystem', 'subsystem_name', 'id_datum_type', 'datum_type_name','datum_type_code', 'code', 'fullname', 'parent_id', 'page', 'id_edizm','lvl','id_lvl0','id_lvl1','id_lvl2','id_lvl3','id_datum_values','int_value','float_value','date_value','nvarchar_value','id_table_value','id_houses_objectid']
         df = pd.DataFrame(columns=columns)
-    
+    conn.commit()
+    conn.close()
     return df
 
 def merge_datum_values_values(conn,params):
@@ -125,6 +129,8 @@ def merge_datum_values_values(conn,params):
     #    params["id_table_value"] = 0 
       
     #keys_params = ['id', 'name', 'id_subsystem', 'subsystem_name', 'id_datum_type', 'datum_type_name','datum_type_code', 'code', 'fullname', 'parent_id', 'page', 'id_edizm','lvl','id_lvl0','id_lvl1','id_lvl2','id_lvl3','id_datum_values','int_value','float_value','date_value','nvarchar_value','id_table_value','id_houses_objectid']
+    engine = st.session_state["engine"]
+    conn = engine.connect()
     keys_needed_params=['id_datum_values', 'id_datum', 'int_value', 'float_value','date_value','nvarchar_value','id_table_value','id_houses_objectid','id_unlinked_houses_id']
     
     params['id_datum'] = params['id']
@@ -181,9 +187,12 @@ def merge_datum_values_values(conn,params):
     #new_record_id = row[0]
     #updated_record_id = row[1] if len(row) > 1 else None
     conn.commit()
+    conn.close()
     #return new_record_id,updated_record_id
 
-def update_datum_level(conn,params,new_record_id):
+def update_datum_level(params,new_record_id):
+    engine = st.session_state["engine"]
+    conn = engine.connect()
     params["lvl"], params["id_lvl0"], params["id_lvl1"], params["id_lvl2"], params["id_lvl3"] = st.session_state.datumsParentStack.get_lvl(new_record_id)
     update_query = """
                    UPDATE mzkh_datums
@@ -196,9 +205,11 @@ def update_datum_level(conn,params,new_record_id):
                    WHERE id = :id
                 """
     conn.execute(text(update_query), {"id": new_record_id, "lvl": params["lvl"], "id_lvl0": params["id_lvl0"], "id_lvl1": params["id_lvl1"], "id_lvl2": params["id_lvl2"], "id_lvl3": params["id_lvl3"]})
-
+    conn.comit()
+    conn.close()
 def add_datum_dict(params):
-    
+    engine = st.session_state["engine"]
+    conn = engine.connect()   
     params.pop("subsystem_name", None)
     params.pop("datum_type_name", None)
     
@@ -218,11 +229,14 @@ def add_datum_dict(params):
     """
     result = conn.execute(text(insert_query), params)
     new_record_id = result.fetchone()[0]
-    update_datum_level(conn,params,new_record_id)
     conn.commit()
+    conn.close()
+    update_datum_level(params,new_record_id)
 
 def update_datum_dict(params,original_row):    
- 
+    engine = st.session_state["engine"]
+    conn = engine.connect()
+
     params.update({key: value for key, value in original_row.items() if key not in params})
     params.pop("subsystem_name", None)
     params.pop("datum_type_name", None)
@@ -249,12 +263,15 @@ def update_datum_dict(params,original_row):
             id_edizm = :id_edizm
         WHERE id = :id
     """
-    conn.execute(text(query), params)
-    update_datum_level(conn,params,params["id"])
+    conn.execute(text(query), params)  
     conn.commit()
+    conn.close()
+    update_datum_level(params,params["id"])
+    
 def delete_datum(datum_id):
-    conn = st.session_state["conn"]
+    engine = st.session_state["engine"]
+    conn = engine.connect()
     query = "DELETE FROM mzkh_datums WHERE id = :datum_id"
     conn.execute(text(query), {"datum_id": datum_id})
     conn.commit()
-   
+    conn.close()

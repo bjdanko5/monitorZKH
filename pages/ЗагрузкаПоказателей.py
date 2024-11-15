@@ -137,6 +137,6 @@ if st.button("Загрузить показатели"):
         #####
         #####
         st.session_state.datumsParentStack.pop()  
-        break    
+        #break    
 
     

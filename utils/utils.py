@@ -74,6 +74,7 @@ def init_pg_connection():
     engine,conn,error_message = None,None,None
     from sqlalchemy.engine import URL
     from sqlalchemy import create_engine
+    from sqlalchemy.pool import QueuePool
     try:
         #connection_url = f"postgresql://postgres:Neodog2020@192.168.10.21/mzkh"
         pg_username = st.secrets["pg_username"]
@@ -82,7 +83,7 @@ def init_pg_connection():
         pg_database   = st.secrets["pg_database"]
 
         connection_url = f"postgresql://{pg_username}:{pg_password}@{pg_server}/{pg_database}"
-        engine = create_engine(connection_url)
+        engine = create_engine(connection_url,poolclass=QueuePool, pool_size=10, max_overflow=20)
         conn = engine.connect()
     except Exception as e:
         error_message = str(e)
@@ -132,11 +133,13 @@ def init_connection():
         conn = engine.connect()
     except Exception as e:
         error_message = str(e)
+    conn.commit()    
     return engine,conn,error_message
 #@st.cache_data(ttl=600)
 
 def run_query(query, params=None):
-    conn = st.session_state["conn"]
+    engine = st.session_state["engine"]
+    conn = engine.connect()  
     if conn is None:
         return None  # or raise an exception, or handle the error in some other way
     
@@ -145,7 +148,10 @@ def run_query(query, params=None):
             cur.execute(query, params)
         else:
             cur.execute(query)
-        return cur.fetchall()
+        curfetchall = cur.fetchall()    
+        conn.commit()    
+        conn.close()
+        return curfetchall
 def auth_check():
     #pg = no_auth_menu()
     if "username" not in st.session_state or "password_correct" not in st.session_state:
@@ -170,33 +176,6 @@ def auth_check():
 def get_conn_status():
     conn = get_pg_conn_status()
     return conn
-    if "conn" in st.session_state and st.session_state["conn"] is not None:
-        conn = st.session_state["conn"]
-        st.session_state["conn"] =conn
-        engine = st.session_state["engine"]
-        st.session_state["engine"] = engine
-        return conn 
-    with st.status("Устанавливается подключение к базе данных...", state="running", expanded=True) as status:
-        st.write("Ожидайте...")
-        st.session_state["engine"],st.session_state["conn"],error_message = init_connection()
-        if st.session_state.get("conn") is None:
-            if "password_correct" in st.session_state:
-                del st.session_state["password_correct"]
-            status.update(label="Не удалось подключиться к базе данных.",state="error", expanded=True)
-            st.write("Cообщение от сервера:")
-            st.write(error_message)   
-            st.write("Выполнен Выход пользователя из Монитора ЖКХ.")   
-            if st.button("Войти ещё раз"):
-                st.switch_page("Монитор_ЖКХ.py") 
-            st.stop()   
-        else:        
-            conn = st.session_state["conn"]
-            st.session_state["conn"] =conn
-            status.update(label="Подключение к базе данных выполнено.",state="complete", expanded=True)   
-            st.write("Можно работать...")
-    #time.sleep (5)       
-    status.update(label="БД подключена",state="complete", expanded=False)
-    return conn 
 def conn_and_auth_check():
     auth_check()
     conn = get_pg_conn_status()
