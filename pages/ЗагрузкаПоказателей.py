@@ -104,7 +104,7 @@ if st.button("Загрузить показатели"):
         datums_df = datums_db.get_datums(subsystem_id = selected_subsystem_id,datum_parent_id = selected_datum_parent_id)
         
         for tab_item_index, tab_item_row in infs_tab_items_df.iterrows():
-            datum_df = datums_df.loc[datums_df['name']==tab_item_row['tab_name']]
+            datum_df = datums_df.loc[datums_df['name'] == tab_item_row['datum_name']]
             if datum_df.empty:
                 params={}
                 params["id_subsystem"] = selected_subsystem_id
