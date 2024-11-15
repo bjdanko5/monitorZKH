@@ -13,7 +13,7 @@ def get_datums_Выбор(subsystem_name=None, subsystem_id=None, subsystem_code
     df = get_datums(subsystem_name=subsystem_name, subsystem_id=subsystem_id, subsystem_code=subsystem_code, datum_parent_id=datum_parent_id)
     df = df[['id',"code","name","fullname","parent_id","id_subsystem"]]
     return df
-def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datum_parent_id=None,datum_lvl=None,datum_id_lvl=None,mode = None):
+def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datum_parent_id=None,datum_lvl=None,datum_id_lvl=None,mode = None,datum_id = None,datum_code = None,datum_name = None):
     conn = st.session_state["conn"]    
     query = """
         SELECT d.*, s.name AS subsystem_name, dt.name AS datum_type_name,e.name AS edizm_name
@@ -24,6 +24,9 @@ def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datu
         WHERE (:subsystem_name IS NULL OR s.name = :subsystem_name)
         AND (:subsystem_id IS NULL OR s.id = :subsystem_id)
         AND (:subsystem_code IS NULL OR s.code = :subsystem_code)
+        AND (:datum_id IS NULL OR d.id = :datum_id)
+        AND (:datum_code IS NULL OR d.code = :datum_code)
+        AND (:datum_name IS NULL OR d.name = :datum_name)
         AND (:mode='all' OR :mode IS NULL AND (:datum_parent_id IS NULL AND parent_id IS NULL OR parent_id = :datum_parent_id))
         AND (:id_lvl0 IS NULL OR id_lvl0 = :id_lvl0)
         AND (:id_lvl1 IS NULL OR id_lvl1 = :id_lvl1)
@@ -38,6 +41,9 @@ def get_datums(subsystem_name=None, subsystem_id=None, subsystem_code=None, datu
     """
     #AND (:datum_parent_id IS NULL OR parent_id = :datum_parent_id)
     params = {
+        "datum_id"      : datum_id,
+        "datum_code"    : datum_code,
+        "datum_name"   : datum_name,
         "subsystem_name": subsystem_name,
         "subsystem_id": prepare_int(subsystem_id),
         "subsystem_code": subsystem_code,

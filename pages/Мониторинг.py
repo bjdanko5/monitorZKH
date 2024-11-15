@@ -82,14 +82,20 @@ with Вкладки_container:
             del st.session_state.selected_Вкладка
     else:    
         data = [
-        stx.TabBarItemData(id=int(row['id']), title=row['name'], description=row['fullname'])
+        stx.TabBarItemData(id=int(row['id']), title=row['fullname'], description='Раздел')
         for index, row in df_Вкладки.iterrows()
         ]
         
         saved_Вкладка = st.session_state.saved_Вкладка if 'saved_Вкладка' in st.session_state else None
         data = sorted(data, key=lambda x: custom_sort(x, saved_Вкладка))
-
-        selected_Вкладка =int(stx.tab_bar(data=data, default=data[0].id,key ="selected_Вкладка"))
+        
+        col1, col2, col3 = st.columns([0.05,0.9,0.05])
+        with col1:
+          st.markdown('# <<')  
+        with col3:
+          st.markdown('# >>')    
+        with col2:
+            selected_Вкладка =int(stx.tab_bar(data=data, default=data[0].id,key ="selected_Вкладка"))
         st.session_state.saved_Вкладка = selected_Вкладка
         selected_house_objectid = st.session_state["selected_house_objectid"]
         #st.info(f"{st.session_state.id_Вкладка=}")

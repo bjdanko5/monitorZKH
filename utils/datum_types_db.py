@@ -15,6 +15,9 @@ def get_datum_types(datum_type_id = None,datum_type_code = None,datum_parent_id 
     elif datum_type_code is None and  datum_parent_id is not None and datum_parent_id!=0:
         query = text("SELECT * FROM mzkh_datum_types WHERE code<>'tab'")
         params = {}
+    elif datum_type_code is not None and  datum_parent_id is not None and datum_parent_id!=0:
+         query = text("SELECT * FROM mzkh_datum_types WHERE code=:datum_type_code")
+         params = {"datum_type_code": datum_type_code}
     else:
         query = text("SELECT * FROM mzkh_datum_types ORDER BY id")
         params = {}
