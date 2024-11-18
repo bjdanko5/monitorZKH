@@ -14,7 +14,8 @@ except ImportError as e:
 conn = utils.conn_and_auth_check()
 def get_infs_tab_items(selected_tab_name):
     # выбираем показатели выбранной вкладки из infs
-    conn = st.session_state["conn"]    
+    engine = st.session_state["engine"]
+    conn = engine.connect()   
     query = """
         SELECT id,code, datum_name, datum_name_rus, tab_name, tab_name_rus, length, is_nullable, type_name
         FROM infs
@@ -28,6 +29,8 @@ def get_infs_tab_items(selected_tab_name):
     else:
         columns = ['id','code', 'datum_name', 'datum_name_rus', 'tab_name', 'tab_name_rus', 'length', 'is_nullable', 'type_name']
         df = pd.DataFrame(columns=columns)   
+    conn.commit()
+    conn.close()    
     return df
 
 def get_infs_tabs():  
@@ -44,6 +47,8 @@ def get_infs_tabs():
     else:
         columns = ['id','code','tab_name','tab_name_rus','type_name']
         df = pd.DataFrame(columns=columns)   
+    conn.commit()
+    conn.close()    
     return df
 def get_id_datum_type_by_datum_type_code(datum_type_code,selected_datum_parent_id = None):
     datum_types_df = datum_types_db.get_datum_types(datum_type_code = datum_type_code,datum_parent_id=selected_datum_parent_id)

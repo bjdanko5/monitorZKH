@@ -121,7 +121,7 @@ with Вкладки_container:
             with c:
                 with col1: 
                     pass
-                    #st.page_link(f"pages/Показатели.py?selected_house_objectid={selected_house_objectid}&datum_code={row['code']}", label=f"Изменить", icon=":material/assignment_ind:")                    
+                    #st.page_link(f"mpages/Показатели.py?selected_house_objectid={selected_house_objectid}&datum_code={row['code']}", label=f"Изменить", icon=":material/assignment_ind:")                    
                 with col2: 
                     st.markdown(f"  ### {spaces} {row['code']} {row['fullname']}", unsafe_allow_html=True)    
                 

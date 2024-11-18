@@ -41,6 +41,11 @@ def setup_op_status(op_status_container,first_visit_status="Готово"):
 def queue_op_status(op_status,status_type="info"):
     st.session_state.op_status_queued = op_status
     st.session_state.op_status_queued_type = status_type
+
+def queue_op_statuses(op_status,status_type="info"):
+    st.session_state.op_status_queued = (st.session_state.get("op_status_queued","") if st.session_state.get("op_status_queued","")!= "" else "") +op_status+"."
+    st.session_state.op_status_queued_type = status_type    
+
 def show_op_status(op_status_container,op_status,status_type="info"):
     if status_type == "success":
         with op_status_container:
@@ -65,7 +70,7 @@ def exit_user():
         del st.session_state.password_correct
     if "username" in st.session_state:
         del st.session_state.username
-    st.switch_page("pages/Вход.py")
+    st.switch_page("mpages/Вход.py")
         
 
 def alltrim(s):
@@ -156,7 +161,7 @@ def auth_check():
     #pg = no_auth_menu()
     if "username" not in st.session_state or "password_correct" not in st.session_state:
         st.write( "Пользователь не авторизован.")  
-        st.switch_page("pages/Вход.py")
+        st.switch_page("mpages/Вход.py")
         
     else:      
        st.session_state["password_correct"] =  st.session_state["password_correct"]
@@ -164,12 +169,12 @@ def auth_check():
        
     if st.session_state.get("password_correct", False)==False:
         st.write( "Неверный пароль. Пожалуйста, попробуйте ещё раз.")
-        st.switch_page("pages/Вход.py")
+        st.switch_page("mpages/Вход.py")
         
     else:
         if st.session_state.get("username")==None:
             st.write( "Пользователь не авторизован.")
-            st.switch_page("pages/Вход.py")
+            st.switch_page("mpages/Вход.py")
             
         #else:   
             #auth_menu()  

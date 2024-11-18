@@ -38,7 +38,7 @@ def СправочникиПоказателей(selected_datums_container):
                 type='primary',
                 key="selected_spr_datum_button" 
             )
-            st.switch_page("pages/Редактор_Справочника_Показателя.py")   
+            st.switch_page("mpages/Редактор_Справочника_Показателя.py")   
             if selected_datums_button:
                 del st.session_state.selected_spr_datum_button
                 del st.session_state.selected_spr_datum

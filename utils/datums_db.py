@@ -100,7 +100,7 @@ def add_datum_dict(params):
     else value 
     for key, value in params.items()
     }
-    params["page"] = "pages/" + params["code"] + ".py"
+    params["page"] = "mpages/" + params["code"] + ".py"
 
     insert_query = """
         INSERT INTO mzkh_datums (name, code, fullname, id_subsystem, id_datum_type, parent_id, page, id_edizm)
@@ -126,7 +126,7 @@ def update_datum_dict(params,original_row):
     else value 
     for key, value in params.items()
     }
-    params["page"] = "pages/" + params["code"] + ".py"
+    params["page"] = "mpages/" + params["code"] + ".py"
 
     query = """
         UPDATE mzkh_datums

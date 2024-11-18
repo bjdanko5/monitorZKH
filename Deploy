@@ -9,6 +9,7 @@ echo "Сборка образа Docker monitorzkh:latest... $(date)"
 start_time=$(date +%s)
 docker buildx build -t monitorzkh:latest --no-cache -f Dockerfile_monitorzkh .
 #docker buildx build -t monitorzkh:latest --no-cache -f Dockerfile_ubuntu_22.04 .
+#docker buildx build -t monitorzkh:latest --no-cache -f Dockerfile_python3.10 .
 end_time=$(date +%s)
 echo "Время сборки: $(($end_time - $start_time)) секунд"
 

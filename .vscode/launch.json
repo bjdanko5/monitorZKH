@@ -24,7 +24,7 @@
             "program": "/var/www/html/monitorZKH/.venv/bin/streamlit",  // /home/xx/tmp/venv/bin/streamlit",
             "args": [
                 "run",
-                "${file}"
+                "Монитор_ЖКХ.py"
             ],
             
         }   

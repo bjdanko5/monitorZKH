@@ -28,7 +28,7 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
             for i, element in enumerate(datumsParentStack):
                 with cols[i]:
                     selected_datums_button = st.button(
-                        label=str(element["code"]+" "+element["name"]),
+                        label=str(element["code"]+" "+element["fullname"]),
                         type='primary',
                         key="selected_datum_button" + str(element["id"])
                     )
@@ -88,7 +88,13 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
                     on_select=on_select_datums_df,
                     selection_mode="single-row",
                     key="event_datums_df"+selected_datum_parent_id_str)
-            
+    if st.session_state.datumsParentStack.peek():
+        if st.button("Переместить показатели внутри  " + 
+                     st.session_state.datumsParentStack.peek()["code"] +
+                     " "+
+                     st.session_state.datumsParentStack.peek()["fullname"]):
+          st.switch_page("mpages/ПорядокПоказателей.py")
+
         if datums_df.empty:
             if datumsParentStack.is_empty():
                 st.write("Сначала Добавьте Вкладки в Подсистему")
@@ -107,5 +113,4 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
             st.subheader("Подсистема " +  st.session_state.datumsParentStack.get_subsystem_name()+" Показатели" +" в " + st.session_state.datumsParentStack.peek()["name"])
         else:    
             st.subheader("Подсистема не выбрана Показатели " +" в " + st.session_state.datumsParentStack.peek()["name"])
-            
-        
+      

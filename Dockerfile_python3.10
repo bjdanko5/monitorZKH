@@ -8,6 +8,7 @@ RUN apt update
 RUN pip3 install logtail-python
 RUN pip install extra_streamlit_components
 RUN pip install psycopg2-binary
+RUN pip install networkx
 
 WORKDIR /var/www/html/monitorZKH
 

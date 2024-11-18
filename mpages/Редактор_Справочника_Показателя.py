@@ -44,7 +44,7 @@ def РедакторСправочникаПоказателя(options_container
     #------------------------------- тело функции-------------------------------  
     selected_spr_datum = st.session_state.get("selected_spr_datum", None)
     if selected_spr_datum is None:
-        st.switch_page("pages/Показатели.py")  
+        st.switch_page("mpages/Показатели.py")  
 
     datum_id = st.session_state.selected_spr_datum.get("id", None)
             

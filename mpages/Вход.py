@@ -53,7 +53,7 @@ def check_password():
   
 if not check_password():
     logger.info("Не авторизован: " + st.session_state["username"]) 
-    st.stop()  
+    #st.rerun()  
 else:
     logger.info("Авторизован: " + st.session_state["username"]) 
     

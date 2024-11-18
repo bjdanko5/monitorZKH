@@ -23,6 +23,7 @@ so.ВыборПодсистемы(so_container)
 sd_container = st.container()
 sd.ВыборПоказателя(sd_container,None)
 
+
 st.toggle("Редактор Справочник показателя", 
     value=st.session_state.get("mode_edit_spr_datum",False), 
     key="mode_edit_spr_datum", 

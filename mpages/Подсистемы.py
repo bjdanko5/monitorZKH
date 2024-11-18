@@ -42,7 +42,7 @@ def fill_subsystems_container():
             subsystem_name = row.get("name", original_subsystems_df.iloc[int(row_id)]["name"])
             subsystem_name = subsystem_name or "Подсистема"
             subsystem_page = row.get("page", original_subsystems_df.iloc[int(row_id)]["page"])
-            subsystem_page = subsystem_page or "pages/"+subsystem_code+".py"
+            subsystem_page = subsystem_page or "mpages/"+subsystem_code+".py"
             subsystem_id = int(original_subsystems_df.iloc[int(row_id)]["id"])
             subsystems_db.update_subsystem(subsystem_id, subsystem_code, subsystem_name,subsystem_page)
         # Добавление
@@ -52,7 +52,7 @@ def fill_subsystems_container():
             subsystem_page = row.get("page","Страница")
             if subsystem_name     != "Подсистема": 
                 if subsystem_code != "Код":
-                    subsystem_page = "pages/"+subsystem_code+".py"
+                    subsystem_page = "mpages/"+subsystem_code+".py"
                     subsystems_db.add_subsystem(subsystem_code, subsystem_name,subsystem_page)
         added_rows.clear()        
         # Удаление

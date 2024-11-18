@@ -14,7 +14,7 @@ except ImportError as e:
 
 from logtail import LogtailHandler
 import logging
-Версия ="0.0.8"
+Версия ="0.0.9"
 handler = LogtailHandler(source_token="HuXAzztxnhkthASvbRxaZv2a")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -60,8 +60,8 @@ def menu():
     #conn = get_conn_status()
     pages = {
     "Монитор ЖКХ": [
-        st.Page("pages/Вход.py", title="Вход", icon = ":material/login:" , default=True),   
-        st.Page("pages/Выход.py", title="Выход", icon = ":material/logout:")
+        st.Page("mpages/Вход.py", title="Вход", icon = ":material/login:" , default=True),   
+        st.Page("mpages/Выход.py", title="Выход", icon = ":material/logout:")
     ],
 
    }
@@ -69,7 +69,7 @@ def menu():
     user_pages={
     }     
     user_pages ["Поиск"] = [
-        st.Page("pages/Поиск_Дома.py", title="Поиск дома",icon = ":material/search:"),   
+        st.Page("mpages/Поиск_Дома.py", title="Поиск дома",icon = ":material/search:"),   
 
     ]
 
@@ -77,20 +77,21 @@ def menu():
     #for subsystem in subsystems_df.itertuples():
     #    user_pages["Информация выбранного Дома"].append(st.Page(subsystem.page, title=subsystem.name, icon=":material/assignment_ind:"))
     user_pages["Мониторинг Дома"]=[]
-    user_pages["Мониторинг Дома"].append(st.Page("pages/Мониторинг.py", title="Выбранный Дом", icon=":material/assignment_ind:"))
+    user_pages["Мониторинг Дома"].append(st.Page("mpages/Мониторинг.py", title="Выбранный Дом", icon=":material/assignment_ind:"))
     
     adm_pages = {
         "Администраторам": [
-            st.Page("pages/ЗагрузкаПоказателей.py", title="Загрузка Показателей", icon = ":material/dns:"),
-            st.Page("pages/Настройки.py", title="Настройки", icon = ":material/dns:"),
-            st.Page("pages/Пользователи.py", title="Пользователи", icon = ":material/group:"),   
-            st.Page("pages/Организации.py", title="Организации", icon = ":material/source_environment:"),   
-            st.Page("pages/Роли.py", title="Роли", icon = ":material/guardian:"),   
-            st.Page("pages/Подсистемы.py", title="Подсистемы", icon = ":material/dns:"),   
-            st.Page("pages/Типы_Показателей.py", title="Типы показателей", icon = ":material/dns:"),   
-            st.Page("pages/Показатели.py", title="Показатели", icon = ":material/dns:"),
-            st.Page("pages/ЕдиницыИзмерения.py", title="Единицы измерения", icon = ":material/dns:"),
-            st.Page("pages/Редактор_Справочника_Показателя.py", title="Редактор Cправочника показателя", icon = ":material/dns:"), 
+            st.Page("mpages/ПорядокПоказателей.py", title="Порядок Показателей", icon = ":material/dns:"),
+            st.Page("mpages/ЗагрузкаПоказателей.py", title="Загрузка Показателей", icon = ":material/dns:"),
+            st.Page("mpages/Настройки.py", title="Настройки", icon = ":material/dns:"),
+            st.Page("mpages/Пользователи.py", title="Пользователи", icon = ":material/group:"),   
+            st.Page("mpages/Организации.py", title="Организации", icon = ":material/source_environment:"),   
+            st.Page("mpages/Роли.py", title="Роли", icon = ":material/guardian:"),   
+            st.Page("mpages/Подсистемы.py", title="Подсистемы", icon = ":material/dns:"),   
+            st.Page("mpages/Типы_Показателей.py", title="Типы показателей", icon = ":material/dns:"),   
+            st.Page("mpages/Показатели.py", title="Показатели", icon = ":material/dns:"),
+            st.Page("mpages/ЕдиницыИзмерения.py", title="Единицы измерения", icon = ":material/dns:"),
+            st.Page("mpages/Редактор_Справочника_Показателя.py", title="Редактор Cправочника показателя", icon = ":material/dns:"), 
 
         ],
         }

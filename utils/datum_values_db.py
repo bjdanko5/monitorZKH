@@ -219,7 +219,7 @@ def add_datum_dict(params):
     else value 
     for key, value in params.items()
     }
-    params["page"] = "pages/" + params["code"] + ".py"
+    params["page"] = "mpages/" + params["code"] + ".py"
 
     conn = st.session_state["conn"]
     insert_query = """
@@ -247,7 +247,7 @@ def update_datum_dict(params,original_row):
     else value 
     for key, value in params.items()
     }
-    params["page"] = "pages/" + params["code"] + ".py"
+    params["page"] = "mpages/" + params["code"] + ".py"
 
     conn = st.session_state["conn"]
     query = """

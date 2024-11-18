@@ -96,7 +96,9 @@ def ПоказатьЗагруженныеФайлы(datum_id,datum_code,datum_n
     
 @st.dialog("Файлы Показателя", width="large")    
 def ФайлыПоказателя(datum_id,datum_type_id,datum_type_code,datum_code,datum_name):
-    #------------------------------- тело функции-------------------------------  
+    #------------------------------- тело функции------------------------------- 
+    if st.button("Назад"):           
+        st.rerun() 
     conn = utils.conn_and_auth_check() 
     if "uploader_key" not in st.session_state:
       st.session_state.uploader_key = 0
