@@ -88,12 +88,18 @@ def ВыборПоказателя(selected_datums_container,datum_parent_id):
                     on_select=on_select_datums_df,
                     selection_mode="single-row",
                     key="event_datums_df"+selected_datum_parent_id_str)
-    if st.session_state.datumsParentStack.peek():
-        if st.button("Переместить показатели внутри  " + 
-                     st.session_state.datumsParentStack.peek()["code"] +
-                     " "+
-                     st.session_state.datumsParentStack.peek()["fullname"]):
-          st.switch_page("mpages/ПорядокПоказателей.py")
+        if st.session_state.datumsParentStack.peek():
+            if st.button("Переместить показатели внутри  " + 
+                        st.session_state.datumsParentStack.peek()["code"] +
+                        " "+
+                        st.session_state.datumsParentStack.peek()["fullname"]):
+                st.switch_page("mpages/ПорядокПоказателей.py")
+        else:
+            id_subsystem_str = str(st.session_state.datumsParentStack.get_id_subsystem())
+            label = 'Переместить Вкладки внутри  '+id_subsystem_str+' ' +st.session_state.datumsParentStack.get_subsystem_name()
+            if st.button(label = label ):
+                st.switch_page("mpages/ПорядокПоказателей.py")
+
 
         if datums_df.empty:
             if datumsParentStack.is_empty():

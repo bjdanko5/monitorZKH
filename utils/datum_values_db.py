@@ -243,10 +243,11 @@ def update_datum_dict(params,original_row):
  
     params = {
     key: int(value) if isinstance(value, np.int64) 
-    else "Не задано" if value in [None, ""] and isinstance(value, str) 
-    else value 
+         else "Не задано" if value in [None, ""] and isinstance(value, str) 
+         else None if pd.isna(value) 
+         else value 
     for key, value in params.items()
-    }
+}
     params["page"] = "mpages/" + params["code"] + ".py"
 
     conn = st.session_state["conn"]

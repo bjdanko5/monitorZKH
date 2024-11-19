@@ -15,7 +15,35 @@ class DataFrameCodeHierarchy:
             code = row['code']
             self.graph.add_node(code, original_code=code)
             # Добавляем узел с исходным кодом
+    def renumber_children(self, parent_code,new_parent_code):
+        # Получаем коды всех непосредственных дочерних элементов
+        children_codes = [node for node in self.dataframe['code'] if node.startswith(parent_code + '.')]
+        
+        if not children_codes:
+            return
+        
+        # Сортируем по последнему числу в коде (например, 13.3.2)
+        sorted_children = sorted(children_codes, key=lambda x: int(x.split('.')[-1]))
+        
+        # Начинаем с 1
+        for i, code in enumerate(sorted_children):
+            new_code = f"{new_parent_code}.{i+1}"
+            self.dataframe.loc[self.dataframe['code'] == code, 'code'] = new_code
+            utils.queue_op_statuses(f"Перенумерован {code} в {new_code}")        
+    def renumber_all_levels(self, parent_code,new_parent_code):
+        # Перенумеровываем непосредственные дочерние элементы
+        self.renumber_children(parent_code,new_parent_code)
 
+        # Получаем коды всех дочерних элементов (включая вложенные уровни)
+
+        children_codes = [node for node in self.dataframe['code'] if node.startswith(parent_code + '.')]
+
+        # Итерируем по каждому дочернему элементу
+        for child_code in children_codes:
+            # Перенумеровываем все уровни ниже текущего дочернего элемента
+            self.renumber_all_levels(child_code,new_parent_code)
+
+ 
     def move_code(self, source_code, target_code):
         source_index = self.dataframe.index[self.dataframe['code'] == source_code].tolist()
         target_index = self.dataframe.index[self.dataframe['code'] == target_code].tolist()
@@ -44,6 +72,10 @@ class DataFrameCodeHierarchy:
         
         # Перемещение кодов
         if len(source_index) == 1 and (len(target_index) == 1 or len(target_index) == 0):
+            source_other_code ='999'
+            self.renumber_children(source_code,source_other_code)
+            self.renumber_children(target_code,source_code)
+            self.renumber_children(source_other_code,target_code)
             # Обновить поле code для обоих кодов
             if len(target_index) == 1:
                 self.dataframe.loc[target_index[0], 'code'] = source_code
@@ -51,14 +83,17 @@ class DataFrameCodeHierarchy:
             utils.queue_op_statuses(f"Показатели с Кодами {source_code} и {target_code} обменяны местами")
         else:
             utils.queue_op_statuses(f"Ошибка: Код {source_code} не найден или  несколько найдено показателей с одинаковым кодом","error")
-
+    
     def move_up(self, code):
         code_list = code.split('.')
-        if len(code_list) > 1:
+        if len(code_list) >= 1:
             parent_code = '.'.join(code_list[:-1])
             min_subpoint = min([int(subcode.split('.')[-1]) for subcode in self.dataframe['code'].values if subcode.startswith(parent_code)])
             if int(code_list[-1]) > min_subpoint:
-                new_code = parent_code + '.' + str(int(code_list[-1]) - 1)
+                if parent_code == '':
+                    new_code = str(int(code_list[-1]) - 1)
+                else:    
+                    new_code = parent_code + '.' + str(int(code_list[-1]) - 1)
                 self.move_code(code, new_code)
             else:
                 utils.queue_op_statuses("Невозможно сдвинуть вверх первый показатель")
@@ -74,7 +109,10 @@ class DataFrameCodeHierarchy:
         
         # Проверка на возможность перемещения вниз
         if next_subpoint <= max_subpoint:
-            new_code = f"{parent_code}.{next_subpoint}"
+            if parent_code =='':
+                new_code = f"{next_subpoint}"
+            else:    
+                new_code = f"{parent_code}.{next_subpoint}"
             self.move_code(code, new_code)    
         else:
             utils.queue_op_statuses("Невозможно сдвинуть последний элемент вниз")
@@ -111,13 +149,14 @@ def show_datums_reorder():
     ##df = pd.DataFrame(data)
     #if not "selected_datum_reorder" in st.session_state:
     
-    if not st.session_state.get("datumsParentStack",None) or not st.session_state.datumsParentStack.peek() :
+    if not st.session_state.get("datumsParentStack",None):
         st.swith_page("mpages/Показатели.py")
     datum_parent_id = st.session_state.datumsParentStack.peek_id()
     subsystem_id = st.session_state.datumsParentStack.get_id_subsystem()
-    datums_reorder_df = datums_db.get_datums(subsystem_id = 1, datum_parent_id = datum_parent_id)
+    datums_reorder_df = datums_db.get_datums_with_childs(subsystem_id = subsystem_id, datum_parent_id = datum_parent_id)
      
-    if not datums_reorder_df.empty:
+    #if not datums_reorder_df.empty:
+    if True:
         column_configuration = {
         "id": st.column_config.NumberColumn(
             "ИД", help="ИД", width="small",disabled=True
@@ -171,8 +210,8 @@ def show_datums_reorder():
 #del st.session_state["selected_datum_reorder"]
 #reorder_container = st.empty()
 #with reorder_container:
-if not st.session_state.get("datumsParentStack",None) or not st.session_state.datumsParentStack.peek() :
-        st.swith_page("mpages/Показатели.py")
+if not st.session_state.get("datumsParentStack",None)  :
+    st.switch_page("mpages/Показатели.py")
 st.header("Порядок показателей")
 datums_reorder_df = show_datums_reorder()
 df_code_hierarchy = DataFrameCodeHierarchy(datums_reorder_df)
@@ -205,7 +244,7 @@ if "selected_datum_reorder" in st.session_state:
             datums_db.update_datum_dict(params = params, original_row = original_row)
         del st.session_state["selected_datum_reorder"]     
         st.rerun()
-op_status_container = st.empty()
+op_status_container = st.container()
 utils.setup_op_status(op_status_container,"Выберите Показатель для перемещения")
 
 

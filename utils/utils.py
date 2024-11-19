@@ -30,13 +30,31 @@ def subsystem_menu(subsystem_id=None, without_settings = False):
             st.page_link(subsystem.page, label=subsystem.name, icon=":material/assignment_ind:")
     """        
 def setup_op_status(op_status_container,first_visit_status="Готово"):
+    if not "op_status_queued_dict" in st.session_state:
+        st.session_state.op_status_queued_dict = {}
     if first_visit_op_status():
         show_op_status(op_status_container,first_visit_status)
     else:
         if "op_status_queued" in st.session_state:
-            show_op_status(op_status_container,st.session_state.op_status_queued,st.session_state.op_status_queued_type)
+            if len(st.session_state.op_status_queued_dict) == 0:
+                show_op_status(op_status_container,st.session_state.op_status_queued,st.session_state.op_status_queued_type)
             del st.session_state.op_status_queued
             del st.session_state.op_status_queued_type
+            if "op_status_queued_dict" in st.session_state:
+                if len(st.session_state.op_status_queued_dict)>0:
+                    op_status_container.empty()
+                for op_status, status_type in st.session_state.op_status_queued_dict.items():
+                    if status_type == "success":
+                        with op_status_container:
+                            st.success(op_status,icon=":material/thumb_up:")        
+                    if status_type == "error":
+                        with op_status_container:
+                            st.error(op_status,icon=":material/error:")        
+                
+                    if status_type == "info":
+                        with op_status_container:
+                            st.info(op_status,icon=":material/help:")                      
+                del st.session_state.op_status_queued_dict    
 
 def queue_op_status(op_status,status_type="info"):
     st.session_state.op_status_queued = op_status
@@ -45,6 +63,8 @@ def queue_op_status(op_status,status_type="info"):
 def queue_op_statuses(op_status,status_type="info"):
     st.session_state.op_status_queued = (st.session_state.get("op_status_queued","") if st.session_state.get("op_status_queued","")!= "" else "") +op_status+"."
     st.session_state.op_status_queued_type = status_type    
+    
+    st.session_state.op_status_queued_dict[op_status] = status_type
 
 def show_op_status(op_status_container,op_status,status_type="info"):
     if status_type == "success":
