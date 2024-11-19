@@ -135,9 +135,12 @@ def get_datums_with_childs(subsystem_name=None, subsystem_id=None, subsystem_cod
     conn.commit()
     conn.close()
     return df
-def update_datum_level(params,new_record_id):
-    engine = st.session_state["engine"]
-    conn = engine.connect()
+def update_datum_level(params,new_record_id,tr_conn=None):
+    if tr_conn:
+        conn = tr_conn
+    else:    
+        engine = st.session_state["engine"]
+        conn = engine.connect()
 
     params["lvl"], params["id_lvl0"], params["id_lvl1"], params["id_lvl2"], params["id_lvl3"] = st.session_state.datumsParentStack.get_lvl(new_record_id)
     update_query = """
@@ -151,8 +154,9 @@ def update_datum_level(params,new_record_id):
                    WHERE id = :id
                 """
     conn.execute(text(update_query), {"id": new_record_id, "lvl": params["lvl"], "id_lvl0": params["id_lvl0"], "id_lvl1": params["id_lvl1"], "id_lvl2": params["id_lvl2"], "id_lvl3": params["id_lvl3"]})
-    conn.commit()
-    conn.close()
+    if not tr_conn:
+      conn.commit()
+      conn.close()
 def add_datum_dict(params):
     engine = st.session_state["engine"]
     conn = engine.connect()
@@ -177,10 +181,23 @@ def add_datum_dict(params):
     conn.commit()
     conn.close() 
     update_datum_level(params,new_record_id)
-
-def update_datum_dict(params,original_row):    
+def StartTransaction():
     engine = st.session_state["engine"]
     conn = engine.connect()
+    return conn 
+def RolbackTransaction(conn):
+    conn.rollback()
+    conn.close()
+def EndTransaction(conn):
+    conn.commit()
+    conn.close()
+         
+def update_datum_dict(params,original_row,tr_conn = None):
+    if tr_conn:
+       conn = tr_conn
+    else:        
+        engine = st.session_state["engine"]
+        conn = engine.connect()
     params.update({key: value for key, value in original_row.items() if key not in params})
     params.pop("subsystem_name", None)
     params.pop("datum_type_name", None)
@@ -208,9 +225,11 @@ def update_datum_dict(params,original_row):
         WHERE id = :id
     """
     conn.execute(text(query), params)
-    conn.commit()
-    conn.close()
-    update_datum_level(params,params["id"])
+    update_datum_level(params,params["id"],conn)
+    if not tr_conn:
+        conn.commit()
+        conn.close()        
+    
 
 def delete_datum(datum_id):
     engine = st.session_state["engine"]

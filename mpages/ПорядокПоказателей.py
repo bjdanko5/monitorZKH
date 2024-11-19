@@ -210,6 +210,11 @@ def show_datums_reorder():
 #del st.session_state["selected_datum_reorder"]
 #reorder_container = st.empty()
 #with reorder_container:
+
+#datums_db.StartTransaction()
+#datums_db.RolbackTransaction(conn)
+#datums_db.EndTransaction(conn)
+
 if not st.session_state.get("datumsParentStack",None)  :
     st.switch_page("mpages/Показатели.py")
 st.header("Порядок показателей")
@@ -223,12 +228,17 @@ if "selected_datum_reorder" in st.session_state:
         df_code_hierarchy.move_up(st.session_state.selected_datum_reorder["code"])
         
         diff_df = datums_reorder_df.loc[datums_reorder_df['code'] != datums_reorder_df['original_code']]
-        
+        conn = datums_db.StartTransaction()
         for diff_index,diff_row  in diff_df.iterrows():
             diff_row['original_code'] = diff_row['code']
             params = diff_row.to_dict()
             original_row = diff_row.to_dict()
-            datums_db.update_datum_dict(params = params, original_row = original_row)
+
+            try:
+                datums_db.update_datum_dict(params = params, original_row = original_row,tr_conn=conn)
+            except:
+                datums_db.RolbackTransaction(conn)    
+        datums_db.EndTransaction(conn)    
         del st.session_state["selected_datum_reorder"]         
         st.rerun()
     if st.button("Вниз",icon=":material/arrow_downward:"):       
@@ -236,12 +246,16 @@ if "selected_datum_reorder" in st.session_state:
         df_code_hierarchy.move_down(st.session_state.selected_datum_reorder["code"])
         
         diff_df = datums_reorder_df.loc[datums_reorder_df['code'] != datums_reorder_df['original_code']]
-        
+        conn = datums_db.StartTransaction()
         for diff_index,diff_row  in diff_df.iterrows():
             diff_row['original_code'] = diff_row['code']
             params = diff_row.to_dict()
             original_row = diff_row.to_dict()
-            datums_db.update_datum_dict(params = params, original_row = original_row)
+            try:
+                datums_db.update_datum_dict(params = params, original_row = original_row,tr_conn=conn)
+            except:
+                datums_db.RolbackTransaction(conn)    
+        datums_db.EndTransaction(conn)        
         del st.session_state["selected_datum_reorder"]     
         st.rerun()
 op_status_container = st.container()
