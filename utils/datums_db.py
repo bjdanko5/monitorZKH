@@ -135,6 +135,9 @@ def get_datums_with_childs(subsystem_name=None, subsystem_id=None, subsystem_cod
     conn.commit()
     conn.close()
     return df
+
+   
+
 def update_datum_level(params,new_record_id,tr_conn=None):
     if tr_conn:
         conn = tr_conn
@@ -225,11 +228,54 @@ def update_datum_dict(params,original_row,tr_conn = None):
         WHERE id = :id
     """
     conn.execute(text(query), params)
-    update_datum_level(params,params["id"],conn)
+   
     if not tr_conn:
+        update_datum_level(params,params["id"],conn)
         conn.commit()
         conn.close()        
-    
+def update_datum_dict1(params,original_row,tr_conn = None):
+    if tr_conn:
+       conn = tr_conn
+    else:        
+        engine = st.session_state["engine"]
+        conn = engine.connect()
+    params.update({key: value for key, value in original_row.items() if key not in params})
+    params.pop("subsystem_name", None)
+    params.pop("datum_type_name", None)
+ 
+    params = {
+        key: int(value) if isinstance(value, np.int64) 
+            else "Не задано" if value in [None, ""] and isinstance(value, str) 
+            else None if pd.isna(value) 
+            else value 
+        for key, value in params.items()
+    }
+    params["page"] = "mpages/" + params["code"] + ".py"
+
+    query = """
+        UPDATE mzkh_datums
+        SET
+            name = :name,
+            code = :code,
+            fullname = :fullname,
+            id_subsystem = :id_subsystem,
+            id_datum_type = :id_datum_type,
+            parent_id = :parent_id,
+            page = :page,
+            id_edizm = :id_edizm,
+            lvl = :lvl,
+            id_lvl0 =:id_lvl0,
+            id_lvl1 =:id_lvl1,
+            id_lvl2 =:id_lvl2,
+            id_lvl3 =:id_lvl3
+        WHERE id = :id
+    """
+    conn.execute(text(query), params)
+   
+    if not tr_conn:
+        update_datum_level(params,params["id"],conn)
+        conn.commit()
+        conn.close()     
 
 def delete_datum(datum_id):
     engine = st.session_state["engine"]

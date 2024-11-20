@@ -14,35 +14,65 @@ class DataFrameCodeHierarchy:
         for index, row in self.dataframe.iterrows():
             code = row['code']
             self.graph.add_node(code, original_code=code)
-            # Добавляем узел с исходным кодом
-    def renumber_children(self, parent_code,new_parent_code):
-        # Получаем коды всех непосредственных дочерних элементов
-        children_codes = [node for node in self.dataframe['code'] if node.startswith(parent_code + '.')]
+
+    def fix_lvl(self,id):
+        record = self.dataframe[self.dataframe['id'] == id].iloc[0]
         
+        if record['parent_id'] is None or pd.isnull(record['parent_id']):
+            level = 0
+            id_lvl0 = None
+            id_lvl1 = None
+            id_lvl2 = None
+            id_lvl3 = None
+        else:
+            parent_record = self.dataframe[self.dataframe['id'] == record['parent_id']].iloc[0]
+            
+            if parent_record['parent_id'] is None or pd.isnull(parent_record['parent_id']):
+                level = 1
+                id_lvl0 = parent_record['id']
+                id_lvl1 = None
+                id_lvl2 = None
+                id_lvl3 = None
+            else:
+                grandparent_record = self.dataframe[self.dataframe['id'] == parent_record['parent_id']].iloc[0]
+                
+                if grandparent_record['parent_id'] is None or pd.isnull(grandparent_record['parent_id']):
+                    level = 2
+                    id_lvl0 = grandparent_record['id']
+                    id_lvl1 = parent_record['id']
+                    id_lvl2 = None
+                    id_lvl3 = None
+                else:
+                    grandgrandparent_record = self.dataframe[self.dataframe['id'] == grandparent_record['parent_id']].iloc[0]
+                    level = 3
+                    id_lvl0 = grandgrandparent_record['id']
+                    id_lvl1 = grandparent_record['id']
+                    id_lvl2 = parent_record['id']
+                    id_lvl3 = None
+                    
+        self.dataframe.loc[self.dataframe['id'] == id, 'lvl'] = level
+        self.dataframe.loc[self.dataframe['id'] == id, 'id_lvl0'] = id_lvl0
+        self.dataframe.loc[self.dataframe['id'] == id, 'id_lvl1'] = id_lvl1
+        self.dataframe.loc[self.dataframe['id'] == id, 'id_lvl2'] = id_lvl2
+        self.dataframe.loc[self.dataframe['id'] == id, 'id_lvl3'] = id_lvl3
+            # Добавляем узел с исходным кодом
+    def renumber_children(self, parent_code, new_parent_code):
+        children_codes = [node for node in self.dataframe['code'] if node.startswith(parent_code + '.')]
+
         if not children_codes:
             return
-        
-        # Сортируем по последнему числу в коде (например, 13.3.2)
-        sorted_children = sorted(children_codes, key=lambda x: int(x.split('.')[-1]))
-        
-        # Начинаем с 1
+
+        sorted_children = sorted(children_codes, key=lambda x: [int(num) for num in x.split('.')])
+
         for i, code in enumerate(sorted_children):
-            new_code = f"{new_parent_code}.{i+1}"
+            parent_levels = len(parent_code.split('.'))
+            child_levels = len(code.split('.'))
+            new_levels = new_parent_code.split('.') + code.split('.')[parent_levels:]
+            new_code = '.'.join(new_levels)
             self.dataframe.loc[self.dataframe['code'] == code, 'code'] = new_code
-            utils.queue_op_statuses(f"Перенумерован {code} в {new_code}")        
-    def renumber_all_levels(self, parent_code,new_parent_code):
-        # Перенумеровываем непосредственные дочерние элементы
-        self.renumber_children(parent_code,new_parent_code)
-
-        # Получаем коды всех дочерних элементов (включая вложенные уровни)
-
-        children_codes = [node for node in self.dataframe['code'] if node.startswith(parent_code + '.')]
-
-        # Итерируем по каждому дочернему элементу
-        for child_code in children_codes:
-            # Перенумеровываем все уровни ниже текущего дочернего элемента
-            self.renumber_all_levels(child_code,new_parent_code)
-
+            self.fix_lvl(int(self.dataframe.loc[self.dataframe['code'] == new_code, 'id'].iloc[0]))
+            utils.queue_op_statuses(f"Перенумерован {code} в {new_code}")  
+ 
  
     def move_code(self, source_code, target_code):
         source_index = self.dataframe.index[self.dataframe['code'] == source_code].tolist()
@@ -79,7 +109,9 @@ class DataFrameCodeHierarchy:
             # Обновить поле code для обоих кодов
             if len(target_index) == 1:
                 self.dataframe.loc[target_index[0], 'code'] = source_code
+                self.fix_lvl(int(self.dataframe.loc[self.dataframe['code'] == source_code, 'id'].iloc[0]))                
             self.dataframe.loc[source_index[0], 'code'] = target_code
+            self.fix_lvl(int(self.dataframe.loc[self.dataframe['code'] == target_code, 'id'].iloc[0]))                
             utils.queue_op_statuses(f"Показатели с Кодами {source_code} и {target_code} обменяны местами")
         else:
             utils.queue_op_statuses(f"Ошибка: Код {source_code} не найден или  несколько найдено показателей с одинаковым кодом","error")
@@ -117,14 +149,28 @@ class DataFrameCodeHierarchy:
         else:
             utils.queue_op_statuses("Невозможно сдвинуть последний элемент вниз")
 
-    def levelUp(self, code):
-        code_list = code.split('.')
-        if len(code_list) > 1:
-            new_code = '.'.join(code_list[:-1])
-            self.move_code(code, new_code)
+    def set_new_parent_code(self,code,new_parent_code):
+        #new_max_subpoint = max([int(subcode.split('.')[-1]) for subcode in self.dataframe['code'].values if subcode.startswith(new_parent_code)], default=0)
+        #new_max_subpoint = max([int(subcode.split('.')[-1]) for subcode in self.dataframe['code'].values if subcode.startswith(f"{new_parent_code}.")], default=0)
+        #new_max_subpoint = max([int(subcode.split('.')[-1]) for subcode in self.dataframe['code'].values if subcode.startswith(f"{new_parent_code}.") and subcode != f"{new_parent_code}"], default=0)
+        new_max_subpoint = max([int(subcode.split('.')[-1]) for subcode in self.dataframe['code'].values if subcode.startswith(f"{new_parent_code}.") and len(subcode.split('.')) == len(new_parent_code.split('.')) + 1], default=0)
+        new_next_subpoint = new_max_subpoint + 1
+        
+        if new_parent_code =='':
+            new_code = f"{new_next_subpoint}"
+        else:    
+            new_code = f"{new_parent_code}.{new_next_subpoint}"
 
-    def levelDown(self, code):
-        self.move_down(code)
+        source_index = self.dataframe.index[self.dataframe['code'] == code].tolist()       
+        self.dataframe.loc[source_index[0], 'code'] = new_code
+        
+
+        new_parent_index = self.dataframe.index[self.dataframe['code'] == new_parent_code].tolist()       
+        self.dataframe.loc[source_index[0], 'parent_id'] = self.dataframe.loc[new_parent_index[0],'id']  
+        
+        self.fix_lvl(int(self.dataframe.loc[self.dataframe['code'] == new_code, 'id'].iloc[0]))
+
+        self.renumber_children(new_code, new_parent_code)    
 
 def show_datums_reorder():
     #------------------------------------------------    
@@ -205,15 +251,20 @@ def show_datums_reorder():
     datums_reorder_df['original_code'] = datums_reorder_df['code']
    
     return datums_reorder_df   
-
-#if not "selected_datum_reorder" in st.session_state: 
-#del st.session_state["selected_datum_reorder"]
-#reorder_container = st.empty()
-#with reorder_container:
-
-#datums_db.StartTransaction()
-#datums_db.RolbackTransaction(conn)
-#datums_db.EndTransaction(conn)
+def update_datums_reorder_df(datums_reorder_df):
+    diff_df = datums_reorder_df.loc[datums_reorder_df['code'] != datums_reorder_df['original_code']]
+    conn = datums_db.StartTransaction()
+    for diff_index,diff_row  in diff_df.iterrows():
+        diff_row['original_code'] = diff_row['code']
+        params = diff_row.to_dict()
+        original_row = diff_row.to_dict()
+        try:
+            datums_db.update_datum_dict1(params = params, original_row = original_row,tr_conn=conn)
+        except:
+            datums_db.RolbackTransaction(conn)    
+    datums_db.EndTransaction(conn)        
+    del st.session_state["selected_datum_reorder"]     
+    st.rerun()
 
 if not st.session_state.get("datumsParentStack",None)  :
     st.switch_page("mpages/Показатели.py")
@@ -226,38 +277,44 @@ if "selected_datum_reorder" in st.session_state:
     if st.button("Вверх",icon=":material/arrow_upward:"):
         utils.queue_op_statuses(f"Сдвиг показателя {st.session_state.selected_datum_reorder['code']} вверх")
         df_code_hierarchy.move_up(st.session_state.selected_datum_reorder["code"])
-        
-        diff_df = datums_reorder_df.loc[datums_reorder_df['code'] != datums_reorder_df['original_code']]
-        conn = datums_db.StartTransaction()
-        for diff_index,diff_row  in diff_df.iterrows():
-            diff_row['original_code'] = diff_row['code']
-            params = diff_row.to_dict()
-            original_row = diff_row.to_dict()
+        update_datums_reorder_df(datums_reorder_df)
+        #diff_df = datums_reorder_df.loc[datums_reorder_df['code'] != datums_reorder_df['original_code']]
+        #conn = datums_db.StartTransaction()
+        #for diff_index,diff_row  in diff_df.iterrows():
+        #    diff_row['original_code'] = diff_row['code']
+        #   params = diff_row.to_dict()
+        #    original_row = diff_row.to_dict()
 
-            try:
-                datums_db.update_datum_dict(params = params, original_row = original_row,tr_conn=conn)
-            except:
-                datums_db.RolbackTransaction(conn)    
-        datums_db.EndTransaction(conn)    
-        del st.session_state["selected_datum_reorder"]         
-        st.rerun()
+        #    try:
+        #        datums_db.update_datum_dict(params = params, original_row = original_row,tr_conn=conn)
+        #    except:
+        #        datums_db.RolbackTransaction(conn)    
+        #datums_db.EndTransaction(conn)    
+        #del st.session_state["selected_datum_reorder"]         
+        #st.rerun()
     if st.button("Вниз",icon=":material/arrow_downward:"):       
         utils.queue_op_statuses(f"Сдвиг показателя {st.session_state.selected_datum_reorder['code']} вниз")
         df_code_hierarchy.move_down(st.session_state.selected_datum_reorder["code"])
-        
-        diff_df = datums_reorder_df.loc[datums_reorder_df['code'] != datums_reorder_df['original_code']]
-        conn = datums_db.StartTransaction()
-        for diff_index,diff_row  in diff_df.iterrows():
-            diff_row['original_code'] = diff_row['code']
-            params = diff_row.to_dict()
-            original_row = diff_row.to_dict()
-            try:
-                datums_db.update_datum_dict(params = params, original_row = original_row,tr_conn=conn)
-            except:
-                datums_db.RolbackTransaction(conn)    
-        datums_db.EndTransaction(conn)        
-        del st.session_state["selected_datum_reorder"]     
-        st.rerun()
+        update_datums_reorder_df(datums_reorder_df)
+        #diff_df = datums_reorder_df.loc[datums_reorder_df['code'] != datums_reorder_df['original_code']]
+        #conn = datums_db.StartTransaction()
+        #for diff_index,diff_row  in diff_df.iterrows():
+        #    diff_row['original_code'] = diff_row['code']
+        #    params = diff_row.to_dict()
+        #    original_row = diff_row.to_dict()
+        #    try:
+        #        datums_db.update_datum_dict(params = params, original_row = original_row,tr_conn=conn)
+        #    except:
+        #        datums_db.RolbackTransaction(conn)    
+        #datums_db.EndTransaction(conn)        
+        #del st.session_state["selected_datum_reorder"]     
+        #st.rerun()
+    new_parent_code = st.text_input(label="Код Родителя для изменения")    
+    if st.button("Изменить Родителя",icon=":material/subdirectory_arrow_right:"):
+        code = st.session_state.selected_datum_reorder["code"]
+        df_code_hierarchy.set_new_parent_code(code,new_parent_code)
+        update_datums_reorder_df(datums_reorder_df)
+
 op_status_container = st.container()
 utils.setup_op_status(op_status_container,"Выберите Показатель для перемещения")
 
